@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { cn } from "../../lib/utils"
 import { useNotifications } from "../../lib/notifications"
+import { useUser } from "../../contexts/UserContext"
 
 interface OwnerNotificationPreferences {
     globalEnabled: boolean;
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: OwnerNotificationPreferences = {
 export function OwnerNotificationSettings() {
     const navigate = useNavigate()
     const { notify } = useNotifications()
+    const { user } = useUser()
     const [settings, setSettings] = useState<OwnerNotificationPreferences>(DEFAULT_SETTINGS)
 
     // Load settings from localStorage
@@ -41,9 +43,11 @@ export function OwnerNotificationSettings() {
 
         // Show immediate feedback
         notify({
+            userId: user?.id || 'system',
+            role: 'owner',
             title: "Settings Updated",
             message: `${key.replace(/([A-Z])/g, ' $1').toLowerCase()} has been ${value ? 'enabled' : 'disabled'}.`,
-            type: "success"
+            type: "info"
         })
     }
 

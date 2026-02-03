@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { useMockState } from "../../lib/mockState"
-import type { Booking } from "../../lib/mockState"
 import { useUser } from "../../contexts/UserContext"
 
 function cn(...inputs: ClassValue[]) {
@@ -41,12 +40,13 @@ export function BookingPage() {
     // Date Logic
     const workshop = workshops.find(w => w.id === id);
     const isAfterHours = (() => {
-        if (!workshop?.businessHours) return false;
+        const ws = workshop as any;
+        if (!ws?.businessHours) return false;
         const now = new Date();
         const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        return timeStr >= workshop.businessHours.close;
+        return timeStr >= ws.businessHours.close;
     })();
-    const startOffset = isAfterHours ? 1 : 0;
+
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-display pb-20">
@@ -201,7 +201,7 @@ export function BookingPage() {
                                 const primaryVehicle = vehicles.find(v => v.isPrimary) || vehicles[0]
 
                                 // Create Booking
-                                const newBooking: Partial<Booking> = {
+                                const newBooking: any = {
                                     id: `MY-${Math.floor(Math.random() * 9000) + 1000}`,
                                     customerId: user?.id || 'u1',
                                     workshopId: id || 'w1',

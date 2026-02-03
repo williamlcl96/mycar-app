@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from "react-router-dom"
-import { type PaymentMethodType, type PaymentStatus } from "../../lib/paymentService"
 import { cn } from "../../lib/utils"
 
 export function PaymentSuccess() {

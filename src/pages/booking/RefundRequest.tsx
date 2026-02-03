@@ -48,7 +48,7 @@ export function RefundRequest() {
         setIsSubmitting(true)
 
         try {
-            const refundCase = createRefundCase({
+            const refundCase = await createRefundCase({
                 bookingId: booking.id,
                 workshopId: booking.workshopId,
                 amount: booking.totalAmount || 0,

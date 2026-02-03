@@ -49,6 +49,7 @@ export function Login() {
                     setTimeout(() => {
                         const account = result.account!;
                         login(email, account.role, {
+                            id: account.id,
                             name: account.role === 'customer'
                                 ? (account as any).fullName || (account as any).username
                                 : (account as any).workshopName
@@ -60,7 +61,7 @@ export function Login() {
                         }
                     }, 800)
                 } else {
-                    setError(result.message)
+                    setError(result.message || "Invalid credentials");
                 }
             }
         } catch (err: any) {

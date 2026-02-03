@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { useMockState } from "../../lib/mockState"
-import { Button } from "../../components/ui/Button"
 import { cn } from "../../lib/utils"
 
 export function RefundStatus() {

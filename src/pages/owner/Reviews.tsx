@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMockState } from "../../lib/mockState"
-import type { Review } from "../../lib/mockState"
 import { useUser } from "../../contexts/UserContext"
 import { shopService } from "../../lib/shopService"
 

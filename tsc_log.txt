@@ -1,0 +1,11 @@
+src/pages/booking/BookingPage.tsx(6,1): error TS6133: 'Booking' is declared but its value is never read.
+src/pages/booking/BookingPage.tsx(50,11): error TS6133: 'startOffset' is declared but its value is never read.
+src/pages/booking/PaymentSuccess.tsx(2,1): error TS6192: All imports in import declaration are unused.
+src/pages/booking/RefundRequest.tsx(63,93): error TS2339: Property 'id' does not exist on type 'Promise<RefundCase>'.
+src/pages/booking/RefundStatus.tsx(4,1): error TS6133: 'Button' is declared but its value is never read.
+src/pages/BookingsPage.tsx(5,1): error TS6133: 'Booking' is declared but its value is never read.
+src/pages/CategoryListing.tsx(73,26): error TS2739: Type '{ image: string; name: string; rating: number; reviews: number; distance: string; location: string; tags: string[]; price: number; }' is missing the following properties from type 'WorkshopCardProps': lat, lng
+src/pages/owner/NotificationSettings.tsx(46,13): error TS2322: Type '"success"' is not assignable to type 'NotificationType'.
+src/pages/owner/NotificationsPage.tsx(8,19): error TS6133: 'role' is declared but its value is never read.
+src/pages/owner/Reviews.tsx(4,1): error TS6133: 'Review' is declared but its value is never read.
+src/pages/profile/NotificationsPage.tsx(8,19): error TS6133: 'role' is declared but its value is never read.

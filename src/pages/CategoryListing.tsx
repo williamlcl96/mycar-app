@@ -79,6 +79,8 @@ export function CategoryListing() {
                             location={workshop.location}
                             tags={workshop.specialties}
                             price={workshop.price}
+                            lat={workshop.lat}
+                            lng={workshop.lng}
                         />
                     </div>
                 ))}

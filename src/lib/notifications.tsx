@@ -112,7 +112,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                         type: n.type as NotificationType,
                         title: n.title,
                         message: n.message,
-                        relatedBookingId: n.link, // Using link field for booking ID
+                        relatedBookingId: n.link || undefined, // Using link field for booking ID
                         isRead: n.is_read,
                         createdAt: new Date(n.created_at).getTime()
                     }));

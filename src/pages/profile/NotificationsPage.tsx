@@ -5,7 +5,7 @@ import { useUser } from "../../contexts/UserContext"
 export function NotificationsPage() {
     const navigate = useNavigate()
     const { notifications, markAsRead, markAllAsRead, clearAll } = useNotifications()
-    const { user, role } = useUser()
+    const { user } = useUser()
 
     // Filter notifications for current user, current role and sort by newest
     const userNotifications = notifications

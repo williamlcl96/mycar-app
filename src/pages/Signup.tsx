@@ -82,7 +82,7 @@ export function Signup() {
                         navigate('/')
                     }, 1000)
                 } else {
-                    setError(result.message)
+                    setError(result.message || "Registration failed");
                 }
             }
         } catch (err: any) {
