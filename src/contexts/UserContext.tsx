@@ -64,7 +64,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // Sync with Supabase on mount/role change if enabled
     useEffect(() => {
         const syncProfile = async () => {
-            console.log('--- AGENT_VERIFICATION_LOG_999 ---');
             console.log('🔄 Profile sync starting...', { USE_SUPABASE, hasUser: !!user });
             if (!USE_SUPABASE || !user) {
                 console.log('⏭️ Skipping sync:', !USE_SUPABASE ? 'Supabase disabled' : 'No user');

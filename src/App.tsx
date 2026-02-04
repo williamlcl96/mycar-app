@@ -137,12 +137,6 @@ function AppRoutes() {
 
 
 export default function App() {
-  if (typeof window !== 'undefined') {
-    (window as any)._agent_test = 'ACTIVE_V4';
-    window.onclick = (e) => {
-      console.log('AGENT_CLICK_DETECTED', e.target);
-    };
-  }
   return (
     <UserProvider>
       <NotificationProvider>

@@ -11,10 +11,6 @@ export function OwnerLayout() {
 
     return (
         <div className="relative flex flex-col h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl">
-            {/* GLOBAL OWNER DEBUG BAR */}
-            <div className="fixed top-0 left-0 right-0 h-4 bg-red-600 z-[999999] flex items-center justify-center text-[8px] text-white font-bold pointer-events-none">
-                OWNER_LAYOUT_ACTIVE_V3
-            </div>
             <NotificationContainer />
             {/* Mock Owner Header */}
             <div className="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between shrink-0">
