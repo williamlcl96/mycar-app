@@ -35,7 +35,7 @@ export function RefundResolution() {
         try {
             // Simulate API call
             await new Promise(r => setTimeout(r, 1000))
-            resolveRefund(refundCase.id, resolution, responseMessage)
+            await resolveRefund(refundCase.id, resolution, responseMessage)
             // No navigate - stay on page to show new status
         } finally {
             setIsSubmitting(false)

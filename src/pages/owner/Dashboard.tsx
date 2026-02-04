@@ -6,7 +6,7 @@ import { shopService } from "../../lib/shopService"
 
 export function OwnerDashboard() {
     const navigate = useNavigate()
-    const { bookings, workshops, quotes, reviews } = useMockState()
+    const { bookings, workshops, quotes, reviews, refunds } = useMockState()
     const { user } = useUser()
     const shopData = user ? shopService.getShopData(user.email) : null
 
@@ -29,14 +29,20 @@ export function OwnerDashboard() {
     // Safe revenue calculation
     // ... (logic remains same)
     const dailyRevenue = myBookings
-        .filter(b => ['COMPLETED', 'READY', 'REPAIRING', 'PAID'].includes(b.status)) // Include PAID jobs
+        .filter(b => {
+            const hasApprovedRefund = refunds.some(r => r.bookingId === b.id && r.status === 'Approved');
+            return ['COMPLETED', 'READY', 'REPAIRING', 'PAID'].includes(b.status) && !hasApprovedRefund;
+        })
         .reduce((acc, b) => {
             if (!b.quoteId) return acc;
             const q = quotes.find(q => q.id === b.quoteId)
             return acc + (q?.total || 0)
         }, 0)
 
-    const activeJobsCount = myBookings.filter(b => ['ACCEPTED', 'REPAIRING', 'READY'].includes(b.status)).length
+    const activeJobsCount = myBookings.filter(b => {
+        const hasApprovedRefund = refunds.some(r => r.bookingId === b.id && r.status === 'Approved');
+        return ['ACCEPTED', 'REPAIRING', 'READY'].includes(b.status) && !hasApprovedRefund;
+    }).length
     const pendingQuotesCount = myBookings.filter(b => b.status === 'PENDING' && !b.quoteId).length
 
     const stats = [
