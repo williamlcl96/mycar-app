@@ -246,6 +246,54 @@ const initialWorkshops: Workshop[] = [
             { name: "Full Body Respray", category: "Bodywork", price: "RM 2500", icon: "format_paint", trending: true },
             { name: "Deep Interior Cleaning", category: "General", price: "RM 150", icon: "cleaning_services" }
         ]
+    },
+    {
+        id: "w5",
+        image: "https://images.unsplash.com/photo-1486006396193-a7c596b12b38?q=80&w=2940&auto=format&fit=crop",
+        name: "Penang Northern Auto",
+        rating: 4.7,
+        reviews: 56,
+        distance: "350 km",
+        location: "George Town",
+        address: "No. 88, Jalan Hutton, 10050 George Town, Pulau Pinang",
+        specialties: ["Continental", "Diagnostics", "Engine Tuning"],
+        price: 120,
+        lat: 5.4214,
+        lng: 100.3329,
+        isVerified: true,
+        experience: "10+ Years",
+        response: "< 15 mins",
+        completed: "1.2k+ jobs",
+        status: 'ACTIVE',
+        businessHours: { open: "09:00", close: "18:00", closedDays: ["Sunday"] },
+        services: [
+            { name: "Computer Diagnostics", category: "Diagnostics", price: "RM 80", icon: "terminal" },
+            { name: "Performance Tuning", category: "Engine", price: "RM 450", icon: "speed" }
+        ]
+    },
+    {
+        id: "w6",
+        image: "https://images.unsplash.com/photo-1625047509168-a7026f36ae04?q=80&w=2680&auto=format&fit=crop",
+        name: "JB Southern Garage",
+        rating: 4.4,
+        reviews: 42,
+        distance: "330 km",
+        location: "Johor Bahru",
+        address: "No. 15, Jalan Wong Ah Fook, 80000 Johor Bahru, Johor",
+        specialties: ["Exhaust", "Suspension", "Alignment"],
+        price: 90,
+        lat: 1.4854,
+        lng: 103.7618,
+        isVerified: false,
+        experience: "6+ Years",
+        response: "< 25 mins",
+        completed: "600+ jobs",
+        status: 'ACTIVE',
+        businessHours: { open: "09:30", close: "19:00", closedDays: [] },
+        services: [
+            { name: "Custom Exhaust", category: "Exhaust", price: "RM 350", icon: "mode_fan" },
+            { name: "Suspension Refresh", category: "Suspension", price: "RM 800", icon: "shutter_speed" }
+        ]
     }
 ]
 

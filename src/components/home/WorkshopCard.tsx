@@ -1,6 +1,8 @@
 import { Button } from "../ui/Button"
 import { useNavigate } from "react-router-dom"
 import { VALID_CATEGORIES } from "../../lib/utils"
+import { useLocation } from "../../contexts/LocationContext"
+import { getDistance } from "../../lib/geoUtils"
 
 interface WorkshopCardProps {
     image: string
@@ -23,15 +25,26 @@ export function WorkshopCard({
     name,
     rating,
     reviews,
-    distance,
+    distance: initialDistance,
     location,
     tags = [],
     price,
+    lat,
+    lng,
     isPromo,
     isOpen,
     closesAt,
 }: WorkshopCardProps) {
     const navigate = useNavigate()
+    const { coords, source } = useLocation()
+
+    const displayDistance = (() => {
+        if (source === "loading" || source === "fallback") return initialDistance;
+
+        const dist = getDistance(coords, { lat, lng });
+        if (dist < 1) return `${(dist * 1000).toFixed(0)} m`;
+        return `${dist.toFixed(1)} km`;
+    })();
 
     // Helper to extract display name from potentially JSON stringified tags
     const getTagDisplay = (tag: string) => {
@@ -84,7 +97,7 @@ export function WorkshopCard({
                                 <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
                                     near_me
                                 </span>{" "}
-                                {distance}
+                                {displayDistance}
                             </span>
                             <span>•</span>
                             {isOpen ? (

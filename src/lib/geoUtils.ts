@@ -56,16 +56,32 @@ export function isWithinBounds(point: Coordinates, bounds: MapBounds): boolean {
  * Simulates a geocoding service.
  * Returns slightly randomized coordinates around KL for any address.
  */
-export function simulateGeocode(address: string, _city?: string): Coordinates {
+export function simulateGeocode(address: string, city?: string): Coordinates {
     // Deterministic randomness based on address string
     const hash = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const offsetLat = (hash % 100) / 1000;
-    const offsetLng = (hash % 80) / 1000;
+    const offsetLat = (hash % 200) / 2000 - 0.05;
+    const offsetLng = (hash % 200) / 2000 - 0.05;
 
-    // Base KL coordinates
+    // Default to KL
+    let baseLat = 3.1390;
+    let baseLng = 101.6869;
+
+    const lowerCity = (city || address).toLowerCase();
+    if (lowerCity.includes("penang") || lowerCity.includes("george town")) {
+        baseLat = 5.4141; baseLng = 100.3288;
+    } else if (lowerCity.includes("johor") || lowerCity.includes("bahru")) {
+        baseLat = 1.4927; baseLng = 103.7414;
+    } else if (lowerCity.includes("sabah") || lowerCity.includes("kinabalu")) {
+        baseLat = 5.9804; baseLng = 116.0735;
+    } else if (lowerCity.includes("sarawak") || lowerCity.includes("kuching")) {
+        baseLat = 1.5533; baseLng = 110.3592;
+    } else if (lowerCity.includes("ipoh") || lowerCity.includes("perak")) {
+        baseLat = 4.5975; baseLng = 101.0901;
+    }
+
     return {
-        lat: 3.1390 + offsetLat - 0.05,
-        lng: 101.6869 + offsetLng - 0.04
+        lat: baseLat + offsetLat,
+        lng: baseLng + offsetLng
     };
 }
 
@@ -80,19 +96,40 @@ export interface ReverseGeocodeResult {
  * Returns a structured Malaysian address based on coordinates.
  */
 export function simulateReverseGeocode(coords: Coordinates): ReverseGeocodeResult {
-    const streetNames = ["Jalan Ampang", "Jalan Sultan Ismail", "Jalan Tun Razak", "Jalan Gasing", "Jalan SS2/6", "Jalan Telawi", "Jalan Bangsar", "Jalan Kiara"];
-    const cities = ["Kuala Lumpur", "Petaling Jaya", "Subang Jaya", "Shah Alam", "Puchong", "Cheras", "Ampang", "Mont Kiara"];
-    const postcodes = ["50450", "47300", "47500", "40000", "47100", "56000", "68000", "50480"];
+    const streetNames = [
+        "Jalan Ampang", "Jalan Sultan Ismail", "Jalan Tun Razak", "Jalan Gasing",
+        "Jalan SS2/6", "Jalan Telawi", "Jalan Bangsar", "Jalan Kiara",
+        "Jalan Hutton", "Jalan Gurney", "Jalan Wong Ah Fook", "Jalan Gaya",
+        "Jalan Satok", "Jalan Merdeka", "Jalan Birch", "Jalan Sultan Abu Bakar"
+    ];
+    const cities = [
+        "Kuala Lumpur", "Petaling Jaya", "Subang Jaya", "Shah Alam",
+        "George Town", "Butterworth", "Johor Bahru", "Kota Kinabalu",
+        "Kuching", "Ipoh", "Melaka", "Kuantan", "Seremban", "Alor Setar",
+        "Kota Bharu", "Kuala Terengganu"
+    ];
+    const postcodes = [
+        "50450", "47300", "47500", "40000",
+        "10050", "12000", "80000", "88000",
+        "93000", "30000", "75000", "25000", "70000", "05000",
+        "15000", "20000"
+    ];
 
     // Deterministic selection based on coordinates
     const seed = Math.abs(Math.floor(coords.lat * 10000 + coords.lng * 10000));
     const streetIndex = seed % streetNames.length;
-    const regionIndex = seed % cities.length;
-    const houseNumber = (seed % 150) + 1;
+
+    // Better city selection based on latitude zones (rough approximation for Malaysia)
+    let cityIndex = seed % cities.length;
+
+    // Rough heuristic to keep northern cities north, southern cities south etc.
+    if (coords.lat > 5) cityIndex = (seed % 4) + 4; // Northern/Borneo (Penang/Sabah/Sarawak/Kedah)
+    else if (coords.lat < 2) cityIndex = 6; // Johor Bahru
+    else if (coords.lng > 110) cityIndex = (seed % 2) + 7; // Sabah/Sarawak
 
     return {
-        address: `No. ${houseNumber}, ${streetNames[streetIndex]}`,
-        city: cities[regionIndex],
-        postcode: postcodes[regionIndex]
+        address: `No. ${(seed % 150) + 1}, ${streetNames[streetIndex]}`,
+        city: cities[cityIndex],
+        postcode: postcodes[cityIndex]
     };
 }

@@ -4,11 +4,13 @@ import { useMockState } from "../lib/mockState"
 import { useState } from "react"
 import { FilterModal } from "../components/home/FilterModal"
 import { filterWorkshops, type WorkshopFilters } from "../lib/search"
+import { useLocation } from "../contexts/LocationContext"
 
 export function CategoryListing() {
     const { id = "all" } = useParams()
     const navigate = useNavigate()
     const { workshops } = useMockState()
+    const { city, isLoading: isLocating } = useLocation()
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [filters, setFilters] = useState<WorkshopFilters>({})
 
@@ -55,7 +57,9 @@ export function CategoryListing() {
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-900 dark:text-white">{finalResults.length} workshops found</span>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Kuala Lumpur • 5km radius</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">
+                            {isLocating ? "Locating..." : (city || "Malaysia")} • Proximity Search
+                        </span>
                     </div>
                     <button
                         onClick={() => setIsFilterOpen(true)}
