@@ -1023,7 +1023,7 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                 setBookings(prev => prev.map(b => {
                     const rCase = refunds.find(r => r.id === caseId);
                     if (rCase && b.id === rCase.bookingId) {
-                        return { ...b, status: 'REJECTED' };
+                        return { ...b, status: 'CANCELLED' };
                     }
                     return b;
                 }));
