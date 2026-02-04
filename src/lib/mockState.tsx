@@ -591,7 +591,7 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
         }
 
         syncData();
-    }, [user?.id]);
+    }, [user?.id, user?.workshopId]);
 
     const clearAllData = () => {
         setBookings([]);

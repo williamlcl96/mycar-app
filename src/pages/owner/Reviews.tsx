@@ -23,6 +23,7 @@ export function OwnerReviewsPage() {
 
     const shopId = useMemo(() => {
         if (!user) return 'w1'
+        if (user.workshopId) return user.workshopId;
         const shopData = shopService.getShopData(user.email)
         const found = workshops?.find(w => w.name === shopData?.workshopName)
         return found?.id || 'none'
