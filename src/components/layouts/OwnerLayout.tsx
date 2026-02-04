@@ -10,10 +10,14 @@ export function OwnerLayout() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className="relative flex flex-col min-h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl pb-24">
+        <div className="relative flex flex-col h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl">
+            {/* GLOBAL OWNER DEBUG BAR */}
+            <div className="fixed top-0 left-0 right-0 h-4 bg-red-600 z-[999999] flex items-center justify-center text-[8px] text-white font-bold pointer-events-none">
+                OWNER_LAYOUT_ACTIVE_V3
+            </div>
             <NotificationContainer />
             {/* Mock Owner Header */}
-            <div className="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+            <div className="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between shrink-0">
                 <h1 className="text-lg font-bold">Workshop Dashboard</h1>
                 <button
                     onClick={() => {
@@ -28,7 +32,7 @@ export function OwnerLayout() {
                 </button>
             </div>
 
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto pb-32 relative z-10">
                 <Outlet />
             </main>
 

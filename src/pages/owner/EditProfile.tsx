@@ -13,6 +13,19 @@ import { workshopService as workshopDataService } from "../../services/workshopS
 import { normalizeSpecialty, VALID_CATEGORIES } from "../../lib/utils"
 import { simulateReverseGeocode } from "../../lib/geoUtils"
 
+// Global click logger for debugging obstructions
+if (typeof window !== 'undefined') {
+    window.addEventListener('click', (e) => {
+        console.log('--- GLOBAL CLICK ---', {
+            target: e.target,
+            tagName: (e.target as any).tagName,
+            className: (e.target as any).className,
+            x: e.clientX,
+            y: e.clientY
+        });
+    }, true);
+}
+
 export function EditShopProfile() {
     const navigate = useNavigate()
     const { user } = useUser()
@@ -90,7 +103,14 @@ export function EditShopProfile() {
 
 
     const handleSave = async () => {
-        if (!user) return
+        alert('Save function entered');
+        console.log('DEBUG: handleSave entered. User:', user);
+
+        if (!user) {
+            alert('DEBUG: User is NULL/UNDEFINED. Save aborted.');
+            return;
+        }
+
         console.log('Starting handleSave with formData:', formData);
 
         // Validate compulsory fields
@@ -213,6 +233,14 @@ export function EditShopProfile() {
 
     return (
         <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
+            {/* DEBUG OVERLAY */}
+            <div
+                onClick={() => alert('STICKY DEBUG CLICKED')}
+                className="fixed top-0 left-0 right-0 bg-red-600 text-white text-[10px] py-1 text-center z-[99999] cursor-pointer"
+            >
+                EVENT TESTER (CLICK ME)
+            </div>
+
             {/* Header */}
             <div className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-4 py-4 flex items-center gap-4">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800">
@@ -674,9 +702,13 @@ export function EditShopProfile() {
 
                 <div className="pt-4">
                     <Button
-                        onClick={handleSave}
+                        onClick={(e) => {
+                            console.log('Button onClick event fired', e);
+                            handleSave();
+                        }}
+                        onPointerDown={() => console.log('Button onPointerDown fired')}
                         isLoading={isLoading}
-                        className="w-full h-14 text-base shadow-xl shadow-primary/20"
+                        className="w-full h-14 text-base shadow-xl shadow-primary/20 relative z-50"
                     >
                         Save Changes
                     </Button>
