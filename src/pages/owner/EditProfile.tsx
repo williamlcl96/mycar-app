@@ -92,11 +92,19 @@ export function EditShopProfile() {
     const handleSave = async () => {
         if (!user) return
 
+        console.log('Starting handleSave with formData:', formData);
+
         // Validate compulsory fields
-        if (!formData.city?.trim() || !formData.postcode?.trim()) {
+        const missingFields = [];
+        if (!formData.workshopName?.trim()) missingFields.push("Workshop Name");
+        if (!formData.phone?.trim()) missingFields.push("Contact Phone");
+        if (!formData.city?.trim()) missingFields.push("City");
+        if (!formData.postcode?.trim()) missingFields.push("Postcode");
+
+        if (missingFields.length > 0) {
             notify({
-                title: "Incomplete Details",
-                message: "City and Postcode are compulsory for the workshop profile.",
+                title: "Missing Details",
+                message: `The following fields are required: ${missingFields.join(", ")}`,
                 type: "info",
                 role: user.role || 'owner',
                 userId: user.id
@@ -106,69 +114,79 @@ export function EditShopProfile() {
 
         setIsLoading(true)
 
-        // Derive closedDays from schedules if they exist for legacy support
-        let finalBusinessHours = { ...formData.businessHours };
-        if (finalBusinessHours?.schedules) {
-            const closedDays = Object.entries(finalBusinessHours.schedules)
-                .filter(([_, sched]) => (sched as any).isClosed)
-                .map(([day]) => day);
-            finalBusinessHours.closedDays = closedDays;
-        }
-
-        const result = shopService.updateShopData(user.email, { ...formData, businessHours: finalBusinessHours } as any)
-
-        // Push to Supabase if enabled
-        if (USE_SUPABASE && result.success) {
-            try {
-                const { data: authData } = await supabase.auth.getUser();
-                const supabaseUserId = authData?.user?.id;
-
-                if (supabaseUserId) {
-                    const { error: workshopError } = await supabase
-                        .from('workshops')
-                        .update({
-                            name: formData.workshopName,
-                            address: formData.address,
-                            location: formData.city,
-                            phone: formData.phone,
-                            business_hours: finalBusinessHours, // Sync full object including schedules
-                            lat: formData.coordinates?.lat,
-                            lng: formData.coordinates?.lng,
-                            services: formData.services || [],
-                            specialties: (formData.specialties || []).filter(s => VALID_CATEGORIES.includes(s))
-                        })
-                        .eq('owner_id', supabaseUserId)
-
-                    if (workshopError) console.error('Failed to update workshop in Supabase:', workshopError)
-
-                    // Update Profile Table (phone)
-                    if (formData.phone) {
-                        const { error: profileError } = await supabase
-                            .from('profiles')
-                            .update({ phone: formData.phone })
-                            .eq('id', supabaseUserId)
-
-                        if (profileError) console.error('Failed to update profile phone:', profileError)
-                    }
-
-                    console.log('✅ Workshop updated in Supabase')
-                }
-            } catch (err) {
-                console.error('Supabase update error:', err)
+        try {
+            // Derive closedDays from schedules if they exist for legacy support
+            let finalBusinessHours = { ...formData.businessHours };
+            if (finalBusinessHours?.schedules) {
+                const closedDays = Object.entries(finalBusinessHours.schedules)
+                    .filter(([_, sched]) => (sched as any).isClosed)
+                    .map(([day]) => day);
+                finalBusinessHours.closedDays = closedDays;
             }
-        }
 
-        setTimeout(() => {
-            setIsLoading(false)
+            console.log('Final business hours for saving:', finalBusinessHours);
+
+            const result = shopService.updateShopData(user.email, { ...formData, businessHours: finalBusinessHours } as any)
+            console.log('shopService.updateShopData result:', result);
+
+            // Push to Supabase if enabled
+            if (USE_SUPABASE && result.success) {
+                console.log('Syncing to Supabase...');
+                try {
+                    const { data: authData, error: authError } = await supabase.auth.getUser();
+                    if (authError) throw authError;
+
+                    const supabaseUserId = authData?.user?.id;
+
+                    if (supabaseUserId) {
+                        const { error: workshopError } = await supabase
+                            .from('workshops')
+                            .update({
+                                name: formData.workshopName,
+                                address: formData.address,
+                                location: formData.city,
+                                phone: formData.phone,
+                                business_hours: finalBusinessHours, // Sync full object including schedules
+                                lat: formData.coordinates?.lat,
+                                lng: formData.coordinates?.lng,
+                                services: formData.services || [],
+                                specialties: (formData.specialties || []).filter(s => VALID_CATEGORIES.includes(s))
+                            })
+                            .eq('owner_id', supabaseUserId)
+
+                        if (workshopError) {
+                            console.error('Failed to update workshop in Supabase:', workshopError);
+                            // We don't throw here to allow local save to succeed
+                        }
+
+                        // Update Profile Table (phone)
+                        if (formData.phone) {
+                            const { error: profileError } = await supabase
+                                .from('profiles')
+                                .update({ phone: formData.phone })
+                                .eq('id', supabaseUserId)
+
+                            if (profileError) console.error('Failed to update profile phone:', profileError)
+                        }
+
+                        console.log('✅ Workshop updated in Supabase')
+                    }
+                } catch (supabaseErr) {
+                    console.error('Supabase sync failure (non-blocking):', supabaseErr);
+                }
+            }
+
             if (result.success) {
                 notify({
                     title: "Success",
                     message: result.message,
                     type: "info",
                     role: user.role || 'owner',
-                    userId: user.id
+                    userId: user.id,
+                    autoDismiss: true
                 });
-                navigate("/owner/profile")
+                // Short delay to ensure notification is processed
+                setTimeout(() => navigate("/owner/profile"), 100);
             } else {
                 notify({
                     title: "Update Failed",
@@ -178,7 +196,19 @@ export function EditShopProfile() {
                     userId: user.id
                 });
             }
-        }, 800)
+        } catch (err) {
+            console.error('Fatal error in handleSave:', err);
+            notify({
+                title: "Unexpected Error",
+                message: "A technical error occurred while saving. Please try again or contact support.",
+                type: "info",
+                role: user.role || 'owner',
+                userId: user.id
+            });
+        } finally {
+            setIsLoading(false);
+            console.log('handleSave execution finished.');
+        }
     }
 
 
