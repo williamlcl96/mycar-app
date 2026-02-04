@@ -135,12 +135,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
                         const updated = {
                             ...prev,
                             id: profile?.id || prev.id,
+                            name: profile?.name || prev.name,
                             email: profile?.email || prev.email,
+                            avatar: profile?.avatar_url || prev.avatar,
                             workshopId: workshopId || undefined
                         };
 
                         // Persist if it changed
-                        if (updated.id !== prev.id || updated.workshopId !== prev.workshopId) {
+                        if (
+                            updated.id !== prev.id ||
+                            updated.name !== prev.name ||
+                            updated.avatar !== prev.avatar ||
+                            updated.workshopId !== prev.workshopId
+                        ) {
                             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updated));
                         }
 
@@ -197,9 +204,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const uiUser: User = {
             ...user,
             id: (account as any)?.id || user.id,
-            name: account?.role === 'customer'
-                ? (account as any)?.fullName || (account as any)?.username || user.name
-                : (account as any)?.workshopName || user.name,
+            // DO NOT overwrite user name with workshop name here. 
+            // The UI should handle displaying workshop name in relevant places (e.g. headers)
+            // if (account?.role === 'owner') name: account.workshopName... -> NO.
             role: nextRole
         };
         setUser(uiUser);
