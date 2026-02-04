@@ -105,28 +105,36 @@ export function EditShopProfile() {
         }
 
         setIsLoading(true)
-        const result = shopService.updateShopData(user.email, formData)
+
+        // Derive closedDays from schedules if they exist for legacy support
+        let finalBusinessHours = { ...formData.businessHours };
+        if (finalBusinessHours?.schedules) {
+            const closedDays = Object.entries(finalBusinessHours.schedules)
+                .filter(([_, sched]) => (sched as any).isClosed)
+                .map(([day]) => day);
+            finalBusinessHours.closedDays = closedDays;
+        }
+
+        const result = shopService.updateShopData(user.email, { ...formData, businessHours: finalBusinessHours } as any)
 
         // Push to Supabase if enabled
         if (USE_SUPABASE && result.success) {
             try {
-                // Get the real Supabase Auth UUID
                 const { data: authData } = await supabase.auth.getUser();
                 const supabaseUserId = authData?.user?.id;
 
                 if (supabaseUserId) {
-                    // Update Workshop Table
                     const { error: workshopError } = await supabase
                         .from('workshops')
                         .update({
                             name: formData.workshopName,
                             address: formData.address,
-                            location: formData.city, // Using city as general location
+                            location: formData.city,
                             phone: formData.phone,
-                            business_hours: formData.businessHours,
+                            business_hours: finalBusinessHours, // Sync full object including schedules
                             lat: formData.coordinates?.lat,
                             lng: formData.coordinates?.lng,
-                            services: formData.services || [], // Sync services as JSONB array
+                            services: formData.services || [],
                             specialties: (formData.specialties || []).filter(s => VALID_CATEGORIES.includes(s))
                         })
                         .eq('owner_id', supabaseUserId)
@@ -220,58 +228,155 @@ export function EditShopProfile() {
 
                 {/* Business Hours */}
                 <section className="space-y-4">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Business Hours</h3>
-                    <div className="space-y-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                        <div className="grid grid-cols-2 gap-4">
-                            <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-semibold text-slate-500">Open Time</span>
-                                <Input
-                                    type="time"
-                                    value={formData.businessHours?.open}
-                                    onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, open: e.target.value } })}
-                                />
-                            </label>
-                            <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-semibold text-slate-500">Close Time</span>
-                                <Input
-                                    type="time"
-                                    value={formData.businessHours?.close}
-                                    onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, close: e.target.value } })}
-                                />
-                            </label>
-                        </div>
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Business Hours</h3>
+                        <button
+                            onClick={() => {
+                                const useSchedules = !!formData.businessHours?.schedules;
+                                if (useSchedules) {
+                                    // Switch to same hours
+                                    setFormData({
+                                        ...formData,
+                                        businessHours: {
+                                            open: formData.businessHours?.open || "09:00",
+                                            close: formData.businessHours?.close || "18:00",
+                                            closedDays: formData.businessHours?.closedDays || ["Sunday"]
+                                        }
+                                    });
+                                } else {
+                                    // Switch to day-specific
+                                    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                                    const schedules: Record<string, any> = {};
+                                    days.forEach(d => {
+                                        schedules[d] = {
+                                            open: formData.businessHours?.open || "09:00",
+                                            close: formData.businessHours?.close || "18:00",
+                                            isClosed: formData.businessHours?.closedDays?.includes(d) || d === "Sunday"
+                                        };
+                                    });
+                                    setFormData({
+                                        ...formData,
+                                        businessHours: { ...formData.businessHours!, schedules }
+                                    });
+                                }
+                            }}
+                            className="text-[10px] font-black text-primary uppercase tracking-widest px-3 py-1 bg-primary/5 rounded-full border border-primary/10"
+                        >
+                            {formData.businessHours?.schedules ? "Apply same to all days" : "Set specific hours for each day"}
+                        </button>
+                    </div>
 
-                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                            <span className="text-xs font-semibold text-slate-500">Days Closed</span>
-                            <div className="flex flex-wrap gap-2">
-                                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
-                                    const isClosed = formData.businessHours?.closedDays?.includes(day);
-                                    return (
-                                        <button
-                                            key={day}
-                                            onClick={() => {
-                                                const current = formData.businessHours?.closedDays || [];
-                                                const next = isClosed
-                                                    ? current.filter(d => d !== day)
-                                                    : [...current, day];
-                                                setFormData({
-                                                    ...formData,
-                                                    businessHours: { ...formData.businessHours!, closedDays: next }
-                                                });
-                                            }}
-                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${isClosed
+                    {!formData.businessHours?.schedules ? (
+                        <div className="space-y-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+                            <div className="grid grid-cols-2 gap-4">
+                                <label className="flex flex-col gap-1.5">
+                                    <span className="text-xs font-semibold text-slate-500">Open Time</span>
+                                    <Input
+                                        type="time"
+                                        value={formData.businessHours?.open}
+                                        onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, open: e.target.value } })}
+                                    />
+                                </label>
+                                <label className="flex flex-col gap-1.5">
+                                    <span className="text-xs font-semibold text-slate-500">Close Time</span>
+                                    <Input
+                                        type="time"
+                                        value={formData.businessHours?.close}
+                                        onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, close: e.target.value } })}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                                <span className="text-xs font-semibold text-slate-500">Days Closed</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
+                                        const isClosed = formData.businessHours?.closedDays?.includes(day);
+                                        return (
+                                            <button
+                                                key={day}
+                                                onClick={() => {
+                                                    const current = formData.businessHours?.closedDays || [];
+                                                    const next = isClosed
+                                                        ? current.filter(d => d !== day)
+                                                        : [...current, day];
+                                                    setFormData({
+                                                        ...formData,
+                                                        businessHours: { ...formData.businessHours!, closedDays: next }
+                                                    });
+                                                }}
+                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${isClosed
                                                     ? "bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800"
                                                     : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-slate-400"
+                                                    }`}
+                                            >
+                                                {day}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
+                                const sched = formData.businessHours?.schedules?.[day] || { open: "09:00", close: "18:00", isClosed: false };
+                                return (
+                                    <div key={day} className="flex items-center gap-4 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-slate-100 dark:border-zinc-800">
+                                        <div className="w-20">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{day}</span>
+                                        </div>
+
+                                        {!sched.isClosed ? (
+                                            <div className="flex-1 flex items-center gap-2">
+                                                <input
+                                                    type="time"
+                                                    value={sched.open}
+                                                    onChange={(e) => {
+                                                        const nextSchedules = { ...formData.businessHours?.schedules };
+                                                        nextSchedules[day] = { ...sched, open: e.target.value };
+                                                        setFormData({ ...formData, businessHours: { ...formData.businessHours!, schedules: nextSchedules } });
+                                                    }}
+                                                    className="bg-slate-50 dark:bg-zinc-800 border-none rounded-lg text-xs font-bold p-1.5 focus:ring-1 focus:ring-primary w-24"
+                                                />
+                                                <span className="text-slate-400">-</span>
+                                                <input
+                                                    type="time"
+                                                    value={sched.close}
+                                                    onChange={(e) => {
+                                                        const nextSchedules = { ...formData.businessHours?.schedules };
+                                                        nextSchedules[day] = { ...sched, close: e.target.value };
+                                                        setFormData({ ...formData, businessHours: { ...formData.businessHours!, schedules: nextSchedules } });
+                                                    }}
+                                                    className="bg-slate-50 dark:bg-zinc-800 border-none rounded-lg text-xs font-bold p-1.5 focus:ring-1 focus:ring-primary w-24"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="flex-1">
+                                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Closed</span>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={() => {
+                                                const nextSchedules = { ...formData.businessHours?.schedules };
+                                                nextSchedules[day] = { ...sched, isClosed: !sched.isClosed };
+                                                setFormData({ ...formData, businessHours: { ...formData.businessHours!, schedules: nextSchedules } });
+                                            }}
+                                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${sched.isClosed
+                                                ? "bg-red-500 text-white"
+                                                : "bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-500"
                                                 }`}
                                         >
-                                            {day}
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                {sched.isClosed ? "close" : "do_not_disturb_on"}
+                                            </span>
                                         </button>
-                                    );
-                                })}
-                            </div>
-                            <p className="text-[10px] text-slate-400 italic">Red indicates days your workshop is closed.</p>
+                                    </div>
+                                );
+                            })}
                         </div>
-                    </div>
+                    )}
                 </section>
 
                 <section className="space-y-4">

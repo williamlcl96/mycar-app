@@ -106,10 +106,17 @@ export interface ServiceDetail {
     trending?: boolean;
 }
 
+export interface DaySchedule {
+    open: string;
+    close: string;
+    isClosed: boolean;
+}
+
 export interface BusinessHours {
-    open: string;  // "09:00"
-    close: string; // "18:00"
-    closedDays: string[]; // ["Sunday"]
+    open: string;  // Default open
+    close: string; // Default close
+    closedDays: string[]; // Legacy support
+    schedules?: Record<string, DaySchedule>; // Day-specific overrides
 }
 
 export interface Vehicle {

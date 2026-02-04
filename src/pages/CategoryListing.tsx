@@ -85,6 +85,7 @@ export function CategoryListing() {
                             price={workshop.price}
                             lat={workshop.lat}
                             lng={workshop.lng}
+                            businessHours={workshop.businessHours}
                         />
                     </div>
                 ))}

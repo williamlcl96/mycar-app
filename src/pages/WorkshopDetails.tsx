@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { useMockState } from "../lib/mockState"
 import { useChat } from "../lib/chatState"
 import { useUser } from "../contexts/UserContext"
-import { cn, calculateStartingPrice, normalizeSpecialty, getNextAvailableSlot, VALID_CATEGORIES } from "../lib/utils"
+import { cn, calculateStartingPrice, normalizeSpecialty, getNextAvailableSlot, getWorkshopStatus, VALID_CATEGORIES } from "../lib/utils"
 import { workshopDataProvider, USE_SUPABASE } from "../lib/dataProvider"
 import type { Workshop as FrontendWorkshop } from "../lib/mockState"
 import { useEffect } from "react"
@@ -84,17 +84,7 @@ export function WorkshopDetails() {
     // Business Hours Logic
     const businessStatus = useMemo(() => {
         if (!workshop || !workshop.businessHours) return null;
-        const now = new Date()
-        const day = now.toLocaleDateString('en-US', { weekday: 'long' })
-        const isClosedDay = workshop.businessHours.closedDays?.includes(day) || false
-
-        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0')
-        const isOpenTime = timeStr >= workshop.businessHours.open && timeStr < workshop.businessHours.close
-
-        return {
-            isOpen: !isClosedDay && isOpenTime,
-            message: isClosedDay ? "Closed Today" : (isOpenTime ? `Open until ${workshop.businessHours.close}` : `Opens at ${workshop.businessHours.open}`)
-        }
+        return getWorkshopStatus(workshop.businessHours);
     }, [workshop])
 
     if (!workshop && !isFetchingLocal) {

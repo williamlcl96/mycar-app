@@ -49,34 +49,66 @@ export function generateUUID(): string {
     });
 }
 
-export function getNextAvailableSlot(businessHours: { open: string, close: string, closedDays?: string[] }): string {
+export function getWorkshopStatus(businessHours: {
+    open: string,
+    close: string,
+    closedDays?: string[],
+    schedules?: Record<string, { open: string; close: string; isClosed: boolean }>
+}) {
     const now = new Date();
     const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+
+    // 1. Check day-specific schedule
+    const schedule = businessHours.schedules?.[day];
+    if (schedule) {
+        if (schedule.isClosed) return { isOpen: false, message: "Closed Today" };
+        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        const isOpen = timeStr >= schedule.open && timeStr < schedule.close;
+        return {
+            isOpen,
+            message: isOpen ? `Open until ${schedule.close}` : (timeStr < schedule.open ? `Opens at ${schedule.open}` : "Closed now"),
+            closesAt: schedule.close
+        };
+    }
+
+    // 2. Fallback to legacy/global logic
     const isClosedToday = businessHours.closedDays?.includes(day);
+    if (isClosedToday) return { isOpen: false, message: "Closed Today" };
 
     const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    const isOpen = timeStr >= businessHours.open && timeStr < businessHours.close;
 
-    if (isClosedToday || timeStr >= businessHours.close) {
-        // Find next open day
-        return 'Tomorrow, ' + businessHours.open;
+    return {
+        isOpen,
+        message: isOpen ? `Open until ${businessHours.close}` : (timeStr < businessHours.open ? `Opens at ${businessHours.open}` : "Closed now"),
+        closesAt: businessHours.close
+    };
+}
+
+export function getNextAvailableSlot(businessHours: {
+    open: string,
+    close: string,
+    closedDays?: string[],
+    schedules?: Record<string, { open: string; close: string; isClosed: boolean }>
+}): string {
+    const status = getWorkshopStatus(businessHours);
+    if (status.isOpen) {
+        // Suggest 1 hour from now
+        const now = new Date();
+        const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+        let h = nextHour.getHours();
+        let m = nextHour.getMinutes() < 30 ? '30' : '00';
+        if (m === '00') h++;
+
+        const slotTime = `${h.toString().padStart(2, '0')}:${m}`;
+        if (status.closesAt && slotTime >= status.closesAt) return 'Tomorrow, ' + businessHours.open;
+
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `Today, ${h12}:${m} ${ampm}`;
     }
 
-    if (timeStr < businessHours.open) {
-        return 'Today, ' + businessHours.open;
-    }
-
-    // If open now, suggest 1 hour from now or next half hour
-    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
-    let hour = nextHour.getHours();
-    let mins: string | number = nextHour.getMinutes() < 30 ? '30' : '00';
-    if (mins === '00') hour++;
-
-    const slotTime = `${hour.toString().padStart(2, '0')}:${mins}`;
-    if (slotTime >= businessHours.close) {
-        return 'Tomorrow, ' + businessHours.open;
-    }
-
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `Today, ${hour12}:${mins} ${ampm}`;
+    return (status.message.includes("Closed Today") || !status.message.includes("Opens at"))
+        ? 'Tomorrow, ' + businessHours.open
+        : 'Today, ' + status.message.replace('Opens at ', '');
 }

@@ -1,6 +1,6 @@
 import { Button } from "../ui/Button"
 import { useNavigate } from "react-router-dom"
-import { VALID_CATEGORIES } from "../../lib/utils"
+import { VALID_CATEGORIES, getWorkshopStatus } from "../../lib/utils"
 import { useLocation } from "../../contexts/LocationContext"
 import { getDistance } from "../../lib/geoUtils"
 
@@ -16,8 +16,7 @@ interface WorkshopCardProps {
     lat: number
     lng: number
     isPromo?: boolean
-    isOpen?: boolean
-    closesAt?: string
+    businessHours?: any
 }
 
 export function WorkshopCard({
@@ -32,8 +31,7 @@ export function WorkshopCard({
     lat,
     lng,
     isPromo,
-    isOpen,
-    closesAt,
+    businessHours,
 }: WorkshopCardProps) {
     const navigate = useNavigate()
     const { coords, source } = useLocation()
@@ -59,6 +57,8 @@ export function WorkshopCard({
             return tag;
         }
     };
+
+    const status = businessHours ? getWorkshopStatus(businessHours) : null;
 
     return (
         <div className="flex flex-col bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-zinc-700 hover:shadow-md transition-shadow duration-300">
@@ -100,10 +100,10 @@ export function WorkshopCard({
                                 {displayDistance}
                             </span>
                             <span>•</span>
-                            {isOpen ? (
+                            {status?.isOpen ? (
                                 <span className="text-green-600 dark:text-green-400 font-medium">Open now</span>
                             ) : (
-                                <span>Closes {closesAt}</span>
+                                <span>{status?.message || "Closed"}</span>
                             )}
                             <span>•</span>
                             <span>{location}</span>
