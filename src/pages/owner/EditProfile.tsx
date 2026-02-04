@@ -91,7 +91,6 @@ export function EditShopProfile() {
 
     const handleSave = async () => {
         if (!user) return
-
         console.log('Starting handleSave with formData:', formData);
 
         // Validate compulsory fields
@@ -104,7 +103,7 @@ export function EditShopProfile() {
         if (missingFields.length > 0) {
             notify({
                 title: "Missing Details",
-                message: `The following fields are required: ${missingFields.join(", ")}`,
+                message: `The following fields are required: ${missingFields.join(", ")} `,
                 type: "info",
                 role: user.role || 'owner',
                 userId: user.id
@@ -213,7 +212,7 @@ export function EditShopProfile() {
 
 
     return (
-        <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark pb-24">
+        <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
             {/* Header */}
             <div className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-4 py-4 flex items-center gap-4">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800">
@@ -222,7 +221,7 @@ export function EditShopProfile() {
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">Edit Shop Profile</h2>
             </div>
 
-            <div className="p-6 space-y-8 overflow-y-auto flex-1">
+            <div className="p-6 space-y-8 flex-1">
                 {/* Basic Info */}
                 <section className="space-y-4">
                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Business Identity</h3>
@@ -335,10 +334,10 @@ export function EditShopProfile() {
                                                         businessHours: { ...formData.businessHours!, closedDays: next }
                                                     });
                                                 }}
-                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${isClosed
+                                                className={`px - 3 py - 1.5 rounded - lg text - [10px] font - bold transition - all border ${isClosed
                                                     ? "bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800"
                                                     : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-slate-400"
-                                                    }`}
+                                                    } `}
                                             >
                                                 {day}
                                             </button>
@@ -393,10 +392,10 @@ export function EditShopProfile() {
                                                 nextSchedules[day] = { ...sched, isClosed: !sched.isClosed };
                                                 setFormData({ ...formData, businessHours: { ...formData.businessHours!, schedules: nextSchedules } });
                                             }}
-                                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${sched.isClosed
+                                            className={`size - 8 rounded - full flex items - center justify - center transition - colors ${sched.isClosed
                                                 ? "bg-red-500 text-white"
                                                 : "bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-500"
-                                                }`}
+                                                } `}
                                         >
                                             <span className="material-symbols-outlined text-[18px]">
                                                 {sched.isClosed ? "close" : "do_not_disturb_on"}
@@ -459,7 +458,7 @@ export function EditShopProfile() {
                                         postcode: (isManualDrag || !prev.postcode) ? geo.postcode : prev.postcode
                                     }));
                                 }}
-                                placeholderAddress={`${formData.address}, ${formData.city} ${formData.postcode}`}
+                                placeholderAddress={`${formData.address}, ${formData.city} ${formData.postcode} `}
                             />
                         </div>
 
@@ -467,7 +466,7 @@ export function EditShopProfile() {
                         <div className="p-4 bg-slate-50 dark:bg-zinc-800 rounded-xl border border-slate-100 dark:border-zinc-700">
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Preview for Users</p>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                {formData.address || "No address set"}{formData.city ? `, ${formData.city}` : ""}{formData.postcode ? ` ${formData.postcode}` : ""}
+                                {formData.address || "No address set"}{formData.city ? `, ${formData.city} ` : ""}{formData.postcode ? ` ${formData.postcode} ` : ""}
                             </p>
                         </div>
 
@@ -538,10 +537,10 @@ export function EditShopProfile() {
                                             : [...current, cat.id];
                                         setFormData({ ...formData, specialties: next });
                                     }}
-                                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${isSelected
+                                    className={`flex flex - col items - center gap - 2 p - 3 rounded - 2xl border transition - all ${isSelected
                                         ? 'bg-primary/5 border-primary text-primary shadow-sm shadow-primary/10'
                                         : 'bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 text-slate-500'
-                                        }`}
+                                        } `}
                                 >
                                     <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                                     <span className="text-[10px] font-bold">{cat.id}</span>
@@ -647,7 +646,7 @@ export function EditShopProfile() {
                                         const newService = {
                                             name: nameEl.value.trim(),
                                             category: iconToCategory[iconEl.value] || 'General',
-                                            price: priceEl.value.trim().startsWith('RM') ? priceEl.value.trim() : `RM ${priceEl.value.trim()}`,
+                                            price: priceEl.value.trim().startsWith('RM') ? priceEl.value.trim() : `RM ${priceEl.value.trim()} `,
                                             icon: iconEl.value,
                                             description: ''
                                         };

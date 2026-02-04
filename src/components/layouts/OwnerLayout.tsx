@@ -1,5 +1,6 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NotificationContainer } from '../ui/NotificationContainer';
 import { useUser } from '../../contexts/UserContext';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
 export function OwnerLayout() {
     const { switchRole } = useUser();
@@ -10,6 +11,7 @@ export function OwnerLayout() {
 
     return (
         <div className="relative flex flex-col min-h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl pb-24">
+            <NotificationContainer />
             {/* Mock Owner Header */}
             <div className="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
                 <h1 className="text-lg font-bold">Workshop Dashboard</h1>
