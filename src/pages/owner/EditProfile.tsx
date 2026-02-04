@@ -144,7 +144,6 @@ export function EditShopProfile() {
                                 name: formData.workshopName,
                                 address: formData.address,
                                 location: formData.city,
-                                phone: formData.phone,
                                 business_hours: finalBusinessHours, // Sync full object including schedules
                                 lat: formData.coordinates?.lat,
                                 lng: formData.coordinates?.lng,
