@@ -67,41 +67,45 @@ export function simulateGeocode(address: string, city?: string): Coordinates {
     let baseLng = 101.6869;
 
     const lowerCity = (city || address).toLowerCase();
-    if (lowerCity.includes("penang") || lowerCity.includes("george town")) {
+
+    // Exact City/State lookups
+    if (lowerCity.includes("penang") || lowerCity.includes("george town") || lowerCity.includes("pulau pinang") || lowerCity.includes("bayan lepas")) {
         baseLat = 5.4141; baseLng = 100.3288;
-    } else if (lowerCity.includes("johor") || lowerCity.includes("bahru")) {
+    } else if (lowerCity.includes("johor") || lowerCity.includes("bahru") || lowerCity.includes("skudai") || lowerCity.includes("pasir gudang")) {
         baseLat = 1.4927; baseLng = 103.7414;
-    } else if (lowerCity.includes("sabah") || lowerCity.includes("kinabalu")) {
+    } else if (lowerCity.includes("sabah") || lowerCity.includes("kinabalu") || lowerCity.includes("sandakan") || lowerCity.includes("tawau")) {
         baseLat = 5.9804; baseLng = 116.0735;
-    } else if (lowerCity.includes("sarawak") || lowerCity.includes("kuching") || lowerCity.includes("miri")) {
+    } else if (lowerCity.includes("sarawak") || lowerCity.includes("kuching") || lowerCity.includes("miri") || lowerCity.includes("sibu") || lowerCity.includes("bintulu")) {
         baseLat = 1.5533; baseLng = 110.3592;
-    } else if (lowerCity.includes("ipoh") || lowerCity.includes("perak")) {
+    } else if (lowerCity.includes("ipoh") || lowerCity.includes("perak") || lowerCity.includes("taiping")) {
         baseLat = 4.5975; baseLng = 101.0901;
     } else if (lowerCity.includes("melaka") || lowerCity.includes("malacca")) {
         baseLat = 2.1896; baseLng = 102.2501;
-    } else if (lowerCity.includes("seremban") || lowerCity.includes("negeri sembilan")) {
+    } else if (lowerCity.includes("seremban") || lowerCity.includes("negeri sembilan") || lowerCity.includes("nilai") || lowerCity.includes("port dickson")) {
         baseLat = 2.7258; baseLng = 101.9424;
-    } else if (lowerCity.includes("kuantan") || lowerCity.includes("pahang")) {
+    } else if (lowerCity.includes("kuantan") || lowerCity.includes("pahang") || lowerCity.includes("genting")) {
         baseLat = 3.8077; baseLng = 103.3260;
-    } else if (lowerCity.includes("alor setar") || lowerCity.includes("kedah")) {
+    } else if (lowerCity.includes("alor setar") || lowerCity.includes("kedah") || lowerCity.includes("langkawi") || lowerCity.includes("sungai petani")) {
         baseLat = 6.1214; baseLng = 100.3601;
     } else if (lowerCity.includes("kota bharu") || lowerCity.includes("kelantan")) {
         baseLat = 6.1254; baseLng = 102.2386;
     } else if (lowerCity.includes("kuala terengganu") || lowerCity.includes("terengganu")) {
         baseLat = 5.3117; baseLng = 103.1324;
+    } else if (lowerCity.includes("selangor") || lowerCity.includes("petaling jaya") || lowerCity.includes("shah alam") || lowerCity.includes("subang") || lowerCity.includes("klang") || lowerCity.includes("puchong") || lowerCity.includes("cyberjaya") || lowerCity.includes("putrajaya")) {
+        baseLat = 3.1073; baseLng = 101.6067;
+    } else if (lowerCity.includes("kuala lumpur") || lowerCity.includes("kl ") || lowerCity.startsWith("kl") || lowerCity.includes(" ampang") || lowerCity.includes("cheras")) {
+        baseLat = 3.1390; baseLng = 101.6869;
     } else {
         // Universal fallback for unknown Malaysia locations
-        // Hash the city name to generate a coordinate within Malaysia's main bounding box
         const cityHash = lowerCity.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-        if (lowerCity.includes("sabah") || lowerCity.includes("sarawak") || lowerCity.includes("kuching") || lowerCity.includes("miri") || lowerCity.includes("bintulu") || lowerCity.includes("sibu") || lowerCity.includes("sandakan") || lowerCity.includes("tawau")) {
-            // East Malaysia Bounds
-            baseLat = 1.5 + (cityHash % 500) / 100; // 1.5 - 6.5
-            baseLng = 110.0 + (cityHash % 900) / 100; // 110.0 - 119.0
+        if (lowerCity.includes("sabah") || lowerCity.includes("sarawak") || lowerCity.includes("borneo")) {
+            baseLat = 1.5 + (cityHash % 500) / 100;
+            baseLng = 110.0 + (cityHash % 900) / 100;
         } else {
-            // West Malaysia Bounds
-            baseLat = 2.0 + (cityHash % 400) / 100; // 2.0 - 6.0
-            baseLng = 100.5 + (cityHash % 300) / 100; // 100.5 - 103.5
+            // West Malaysia bounds
+            baseLat = 2.0 + (cityHash % 400) / 100;
+            baseLng = 100.5 + (cityHash % 300) / 100;
         }
     }
 
@@ -145,13 +149,41 @@ export function simulateReverseGeocode(coords: Coordinates): ReverseGeocodeResul
     const seed = Math.abs(Math.floor(coords.lat * 10000 + coords.lng * 10000));
     const streetIndex = seed % streetNames.length;
 
-    // Better city selection based on latitude zones (rough approximation for Malaysia)
+    // Better city selection based on regional zones
     let cityIndex = seed % cities.length;
 
-    // Rough heuristic to keep northern cities north, southern cities south etc.
-    if (coords.lat > 5) cityIndex = (seed % 4) + 4; // Northern/Borneo (Penang/Sabah/Sarawak/Kedah)
-    else if (coords.lat < 2) cityIndex = 6; // Johor Bahru
-    else if (coords.lng > 110) cityIndex = (seed % 2) + 7; // Sabah/Sarawak
+    // Heuristics for Malaysian regions
+    if (coords.lng > 108) {
+        // East Malaysia (Borneo)
+        cityIndex = (seed % 2) === 0 ? 7 : 8; // Kota Kinabalu or Kuching
+    } else if (coords.lat > 5.8) {
+        // Very North (Kedah/Kelantan/Perlis)
+        cityIndex = (seed % 2) === 0 ? 13 : 14; // Alor Setar or Kota Bharu
+    } else if (coords.lat > 5.0) {
+        // North (Penang/Perak North/Terengganu North)
+        const subSeed = seed % 3;
+        if (subSeed === 0) cityIndex = 4; // George Town
+        else if (subSeed === 1) cityIndex = 5; // Butterworth
+        else cityIndex = 15; // Kuala Terengganu
+    } else if (coords.lat > 4.2) {
+        // Perak / Central North
+        cityIndex = 9; // Ipoh
+    } else if (coords.lat < 2.0) {
+        // South (Johor)
+        cityIndex = 6; // Johor Bahru
+    } else if (coords.lat < 2.5) {
+        // Melaka
+        cityIndex = 10; // Melaka
+    } else if (coords.lat < 3.0) {
+        // Seremban / Negeri Sembilan
+        cityIndex = 12; // Seremban
+    } else if (coords.lng > 103) {
+        // East Coast (Pahang)
+        cityIndex = 11; // Kuantan
+    } else if (coords.lat > 3.0 && coords.lat < 3.3) {
+        // Klang Valley
+        cityIndex = seed % 4; // KL, PJ, Subang, Shah Alam
+    }
 
     return {
         address: `No. ${(seed % 150) + 1}, ${streetNames[streetIndex]}`,

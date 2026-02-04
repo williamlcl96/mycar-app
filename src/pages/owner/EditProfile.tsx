@@ -280,14 +280,15 @@ export function EditShopProfile() {
                             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Pinpoint Location</label>
                             <LocationPicker
                                 initialCenter={formData.coordinates || { lat: 3.1390, lng: 101.6869 }}
-                                onLocationChange={(coords) => {
+                                onLocationChange={(coords, isManualDrag) => {
                                     const geo = simulateReverseGeocode(coords);
                                     setFormData(prev => ({
                                         ...prev,
                                         coordinates: coords,
-                                        address: geo.address,
-                                        city: geo.city,
-                                        postcode: geo.postcode
+                                        // Only overwrite address if manually dragging or if address is empty
+                                        address: (isManualDrag || !prev.address) ? geo.address : prev.address,
+                                        city: (isManualDrag || !prev.city) ? geo.city : prev.city,
+                                        postcode: (isManualDrag || !prev.postcode) ? geo.postcode : prev.postcode
                                     }));
                                 }}
                                 placeholderAddress={`${formData.address}, ${formData.city} ${formData.postcode}`}

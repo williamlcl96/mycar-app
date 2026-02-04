@@ -7,7 +7,7 @@ import { Input } from "../ui/Input"
 
 interface LocationPickerProps {
     initialCenter: Coordinates;
-    onLocationChange: (coords: Coordinates) => void;
+    onLocationChange: (coords: Coordinates, isManualDrag?: boolean) => void;
     placeholderAddress?: string;
 }
 
@@ -81,14 +81,14 @@ export function LocationPicker({ initialCenter, onLocationChange, placeholderAdd
             marker.current.on('dragend', () => {
                 const lngLat = marker.current?.getLngLat()
                 if (lngLat) {
-                    onLocationChange({ lat: lngLat.lat, lng: lngLat.lng })
+                    onLocationChange({ lat: lngLat.lat, lng: lngLat.lng }, true)
                 }
             })
 
             // Click to move pin
             m.on('click', (e) => {
                 marker.current?.setLngLat(e.lngLat)
-                onLocationChange({ lat: e.lngLat.lat, lng: e.lngLat.lng })
+                onLocationChange({ lat: e.lngLat.lat, lng: e.lngLat.lng }, true)
             })
 
         } catch (error) {
