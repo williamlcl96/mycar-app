@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { NotificationContainer } from '../ui/NotificationContainer';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -8,6 +9,15 @@ export function OwnerLayout() {
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path;
+
+    const mainRef = React.useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to top on route change
+    React.useEffect(() => {
+        if (mainRef.current) {
+            mainRef.current.scrollTop = 0;
+        }
+    }, [location.pathname]);
 
     return (
         <div className="relative flex flex-col h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl">
@@ -28,7 +38,7 @@ export function OwnerLayout() {
                 </button>
             </div>
 
-            <main className="flex-1 overflow-y-auto pb-32 relative z-10">
+            <main ref={mainRef} className="flex-1 overflow-y-auto pb-32 relative z-10">
                 <Outlet />
             </main>
 

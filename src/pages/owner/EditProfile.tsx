@@ -536,13 +536,13 @@ export function EditShopProfile() {
                                             : [...current, cat.id];
                                         setFormData({ ...formData, specialties: next });
                                     }}
-                                    className={`flex flex - col items - center gap - 2 p - 3 rounded - 2xl border transition - all ${isSelected
+                                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isSelected
                                         ? 'bg-primary/5 border-primary text-primary shadow-sm shadow-primary/10'
                                         : 'bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 text-slate-500'
-                                        } `}
+                                        }`}
                                 >
-                                    <span className="material-symbols-outlined text-xl">{cat.icon}</span>
-                                    <span className="text-[10px] font-bold">{cat.id}</span>
+                                    <span className="material-symbols-outlined text-2xl">{cat.icon}</span>
+                                    <span className="text-xs font-bold">{cat.id}</span>
                                 </button>
                             );
                         })}
