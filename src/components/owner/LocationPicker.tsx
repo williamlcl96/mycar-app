@@ -26,6 +26,14 @@ export function LocationPicker({ initialCenter, onLocationChange, placeholderAdd
         }
     }, [placeholderAddress]);
 
+    // Sync map center when initialCenter changes (e.g. data loaded from Supabase)
+    useEffect(() => {
+        if (map.current && marker.current && initialCenter) {
+            map.current.setCenter([initialCenter.lng, initialCenter.lat]);
+            marker.current.setLngLat([initialCenter.lng, initialCenter.lat]);
+        }
+    }, [initialCenter.lat, initialCenter.lng]);
+
     useEffect(() => {
         if (!mapContainer.current) return
 

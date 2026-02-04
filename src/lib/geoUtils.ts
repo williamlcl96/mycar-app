@@ -73,10 +73,36 @@ export function simulateGeocode(address: string, city?: string): Coordinates {
         baseLat = 1.4927; baseLng = 103.7414;
     } else if (lowerCity.includes("sabah") || lowerCity.includes("kinabalu")) {
         baseLat = 5.9804; baseLng = 116.0735;
-    } else if (lowerCity.includes("sarawak") || lowerCity.includes("kuching")) {
+    } else if (lowerCity.includes("sarawak") || lowerCity.includes("kuching") || lowerCity.includes("miri")) {
         baseLat = 1.5533; baseLng = 110.3592;
     } else if (lowerCity.includes("ipoh") || lowerCity.includes("perak")) {
         baseLat = 4.5975; baseLng = 101.0901;
+    } else if (lowerCity.includes("melaka") || lowerCity.includes("malacca")) {
+        baseLat = 2.1896; baseLng = 102.2501;
+    } else if (lowerCity.includes("seremban") || lowerCity.includes("negeri sembilan")) {
+        baseLat = 2.7258; baseLng = 101.9424;
+    } else if (lowerCity.includes("kuantan") || lowerCity.includes("pahang")) {
+        baseLat = 3.8077; baseLng = 103.3260;
+    } else if (lowerCity.includes("alor setar") || lowerCity.includes("kedah")) {
+        baseLat = 6.1214; baseLng = 100.3601;
+    } else if (lowerCity.includes("kota bharu") || lowerCity.includes("kelantan")) {
+        baseLat = 6.1254; baseLng = 102.2386;
+    } else if (lowerCity.includes("kuala terengganu") || lowerCity.includes("terengganu")) {
+        baseLat = 5.3117; baseLng = 103.1324;
+    } else {
+        // Universal fallback for unknown Malaysia locations
+        // Hash the city name to generate a coordinate within Malaysia's main bounding box
+        const cityHash = lowerCity.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+        if (lowerCity.includes("sabah") || lowerCity.includes("sarawak") || lowerCity.includes("kuching") || lowerCity.includes("miri") || lowerCity.includes("bintulu") || lowerCity.includes("sibu") || lowerCity.includes("sandakan") || lowerCity.includes("tawau")) {
+            // East Malaysia Bounds
+            baseLat = 1.5 + (cityHash % 500) / 100; // 1.5 - 6.5
+            baseLng = 110.0 + (cityHash % 900) / 100; // 110.0 - 119.0
+        } else {
+            // West Malaysia Bounds
+            baseLat = 2.0 + (cityHash % 400) / 100; // 2.0 - 6.0
+            baseLng = 100.5 + (cityHash % 300) / 100; // 100.5 - 103.5
+        }
     }
 
     return {
