@@ -548,9 +548,42 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                         console.log('✅ Synced refunds:', dbRefunds.length);
                     }
 
-                    // Note: Reviews and Quotes are typically fetched per-workshop/booking basis
-                    // They will be fetched on-demand in specific pages
+                    // Fetch Reviews
+                    let allDbReviews: any[] = [];
 
+                    // 1. If owner, fetch reviews for their workshop
+                    if (user?.workshopId) {
+                        const workshopReviews = await reviewDataProvider.getByWorkshop(user.workshopId);
+                        if (workshopReviews) allDbReviews = [...allDbReviews, ...workshopReviews];
+                    }
+
+                    // 2. Also fetch reviews written by this user
+                    const userReviews = await reviewDataProvider.getByUser(supabaseUserId);
+                    if (userReviews) {
+                        // Avoid duplicates if user is owner of their own workshop
+                        const existingIds = new Set(allDbReviews.map(r => r.id));
+                        const uniqueUserReviews = userReviews.filter(r => !existingIds.has(r.id));
+                        allDbReviews = [...allDbReviews, ...uniqueUserReviews];
+                    }
+
+                    if (allDbReviews.length > 0) {
+                        setReviews(allDbReviews.map((r: any) => ({
+                            id: r.id,
+                            userId: r.user_id,
+                            userName: r.user_name,
+                            workshopId: r.workshop_id,
+                            bookingId: r.booking_id,
+                            rating: r.rating,
+                            pricingRating: r.pricing_rating,
+                            attitudeRating: r.attitude_rating,
+                            professionalRating: r.professional_rating,
+                            comment: r.comment,
+                            reply: r.reply || undefined,
+                            repliedAt: r.replied_at || undefined,
+                            createdAt: r.created_at
+                        })));
+                        console.log('✅ Synced reviews:', allDbReviews.length);
+                    }
                 } catch (err) {
                     console.error("❌ Failed to sync Supabase data:", err);
                 }

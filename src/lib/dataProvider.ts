@@ -151,6 +151,13 @@ export const reviewDataProvider = {
         return null
     },
 
+    async getByUser(userId: string) {
+        if (USE_SUPABASE) {
+            return services.reviewService.getByUser(userId)
+        }
+        return null
+    },
+
     async create(review: Parameters<typeof services.reviewService.create>[0]) {
         if (USE_SUPABASE) {
             return services.reviewService.create(review)
