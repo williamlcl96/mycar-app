@@ -20,7 +20,7 @@ export interface OwnerAccount extends UserAccount {
     postcode?: string;
     licenseNumber?: string;
     contactEmail?: string;
-    businessHours?: { open: string; close: string };
+    businessHours?: { open: string; close: string; closedDays?: string[] };
     coordinates?: { lat: number; lng: number };
     services?: ServiceDetail[];
     specialties?: string[];

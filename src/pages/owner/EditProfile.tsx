@@ -25,7 +25,7 @@ export function EditShopProfile() {
         contactEmail: "",
         city: "",
         postcode: "",
-        businessHours: { open: "09:00", close: "18:00" },
+        businessHours: { open: "09:00", close: "18:00", closedDays: ["Sunday"] },
         coordinates: { lat: 3.1390, lng: 101.6869 }, // Default KL
         services: [],
         specialties: []
@@ -47,7 +47,7 @@ export function EditShopProfile() {
                     contactEmail: localData.contactEmail || "",
                     city: localData.city || "",
                     postcode: localData.postcode || "",
-                    businessHours: localData.businessHours || { open: "09:00", close: "18:00" },
+                    businessHours: localData.businessHours || { open: "09:00", close: "18:00", closedDays: ["Sunday"] },
                     coordinates: localData.coordinates || { lat: 3.1390, lng: 101.6869 },
                     services: localData.services || [],
                     specialties: (localData.specialties || [])
@@ -221,23 +221,56 @@ export function EditShopProfile() {
                 {/* Business Hours */}
                 <section className="space-y-4">
                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Business Hours</h3>
-                    <div className="grid grid-cols-2 gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                        <label className="flex flex-col gap-1.5">
-                            <span className="text-xs font-semibold text-slate-500">Open Time</span>
-                            <Input
-                                type="time"
-                                value={formData.businessHours?.open}
-                                onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, open: e.target.value } })}
-                            />
-                        </label>
-                        <label className="flex flex-col gap-1.5">
-                            <span className="text-xs font-semibold text-slate-500">Close Time</span>
-                            <Input
-                                type="time"
-                                value={formData.businessHours?.close}
-                                onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, close: e.target.value } })}
-                            />
-                        </label>
+                    <div className="space-y-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+                        <div className="grid grid-cols-2 gap-4">
+                            <label className="flex flex-col gap-1.5">
+                                <span className="text-xs font-semibold text-slate-500">Open Time</span>
+                                <Input
+                                    type="time"
+                                    value={formData.businessHours?.open}
+                                    onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, open: e.target.value } })}
+                                />
+                            </label>
+                            <label className="flex flex-col gap-1.5">
+                                <span className="text-xs font-semibold text-slate-500">Close Time</span>
+                                <Input
+                                    type="time"
+                                    value={formData.businessHours?.close}
+                                    onChange={(e) => setFormData({ ...formData, businessHours: { ...formData.businessHours!, close: e.target.value } })}
+                                />
+                            </label>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                            <span className="text-xs font-semibold text-slate-500">Days Closed</span>
+                            <div className="flex flex-wrap gap-2">
+                                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
+                                    const isClosed = formData.businessHours?.closedDays?.includes(day);
+                                    return (
+                                        <button
+                                            key={day}
+                                            onClick={() => {
+                                                const current = formData.businessHours?.closedDays || [];
+                                                const next = isClosed
+                                                    ? current.filter(d => d !== day)
+                                                    : [...current, day];
+                                                setFormData({
+                                                    ...formData,
+                                                    businessHours: { ...formData.businessHours!, closedDays: next }
+                                                });
+                                            }}
+                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${isClosed
+                                                    ? "bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800"
+                                                    : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-slate-400"
+                                                }`}
+                                        >
+                                            {day}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-[10px] text-slate-400 italic">Red indicates days your workshop is closed.</p>
+                        </div>
                     </div>
                 </section>
 
