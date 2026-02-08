@@ -143,7 +143,7 @@ export const messageService = {
             console.error('[DEBUG] messageService: sendMessage insert error', msgError);
             throw msgError
         }
-        console.log('[DEBUG] messageService: Message inserted', message);
+        console.log('[DEBUG] messageService: Message inserted successfully', message);
 
         // Update conversation with last message
         const { error: updateError } = await supabase
@@ -184,18 +184,31 @@ export const messageService = {
     },
 
     async deleteConversation(id: string): Promise<void> {
-        const { error } = await supabase
+        console.log('[DEBUG] messageService: Deleting conversation from DB', id);
+        const { error, count } = await supabase
             .from('conversations')
             .delete()
             .eq('id', id)
-        if (error) throw error
+            .select() // Select to verify deletion
+
+        if (error) {
+            console.error('[DEBUG] messageService: deleteConversation error', error);
+            throw error
+        }
+        console.log('[DEBUG] messageService: deleteConversation success. Rows affected:', count);
     },
 
     async deleteMessage(id: string): Promise<void> {
+        console.log('[DEBUG] messageService: Deleting message from DB', id);
         const { error } = await supabase
             .from('messages')
             .delete()
             .eq('id', id)
-        if (error) throw error
+
+        if (error) {
+            console.error('[DEBUG] messageService: deleteMessage error', error);
+            throw error
+        }
+        console.log('[DEBUG] messageService: deleteMessage success', id);
     }
 }

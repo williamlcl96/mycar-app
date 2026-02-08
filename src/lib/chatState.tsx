@@ -53,9 +53,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 // Determine the correct ID to lookup conversations
                 // Owners fetch by workshopId, customers by userId (profile id)
                 const lookupId = (activeRole === 'owner' && user.workshopId) ? user.workshopId : user.id;
+                console.log('[DEBUG] chatState: Fetching conversations', { activeRole, lookupId, userId: user.id, workshopId: user.workshopId });
 
                 const supabaseConversations = await messageDataProvider.getConversations(lookupId, activeRole === 'owner' ? 'owner' : 'customer')
                 if (supabaseConversations) {
+                    console.log('[DEBUG] chatState: Conversations fetched', supabaseConversations.length);
                     const mapped: Conversation[] = supabaseConversations.map(sc => ({
                         id: sc.id,
                         contextType: sc.booking_id ? 'booking' : 'consultation',
