@@ -194,8 +194,13 @@ export function BookingPage() {
                         onClick={() => {
                             if (step === 1) setStep(2)
                             else {
-                                // Find workshop
-                                const workshop = workshops.find((w: any) => w.name.includes("Ali") || w.location.includes("Ampang")) // Fallback mock
+                                // Find workshop - rely on ID logic or real data, no more substring mocks
+                                const workshop = workshops.find(w => w.id === id);
+
+                                if (!workshop) {
+                                    alert("Workshop not found. Please try again.");
+                                    return;
+                                }
 
                                 // Find primary vehicle
                                 const primaryVehicle = vehicles.find(v => v.isPrimary) || vehicles[0]
@@ -205,9 +210,9 @@ export function BookingPage() {
                                     id: `MY-${Math.floor(Math.random() * 9000) + 1000}`,
                                     customerId: user?.id || 'u1',
                                     workshopId: id || 'w1',
-                                    workshopName: workshop?.name || "Ali's Auto expert",
-                                    workshopImage: workshop?.image || "https://images.unsplash.com/photo-1613214292775-430961239c89?q=80&w=200&auto=format&fit=crop",
-                                    customerName: user?.name || 'Ahmad Ali',
+                                    workshopName: workshop?.name || "Unknown Workshop",
+                                    workshopImage: workshop?.image || "https://placehold.co/400x300?text=Workshop",
+                                    customerName: user?.name || 'Customer',
                                     serviceType: selectedServices.length > 1 ? "Multiple Services" : services.find(s => s.id === selectedServices[0])?.title || "Service",
                                     services: selectedServices.map(sid => services.find(s => s.id === sid)?.title || ""),
                                     date: selectedDate,

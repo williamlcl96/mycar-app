@@ -230,7 +230,7 @@ export function EditShopProfile() {
                             <Input
                                 value={formData.workshopName}
                                 onChange={(e) => setFormData({ ...formData, workshopName: e.target.value })}
-                                placeholder="e.g. Ali's Auto Expert"
+                                placeholder="e.g. Best Workshop"
                             />
                         </label>
                         <div className="grid grid-cols-2 gap-4">
