@@ -359,7 +359,7 @@ interface MockStateContextType {
     addVehicle: (vehicle: Omit<Vehicle, 'id' | 'createdAt'>) => Promise<void>;
     deleteVehicle: (id: string) => void;
     updateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
-    setPrimaryVehicle: (id: string) => void;
+    setPrimaryVehicle: (id: string) => Promise<void>;
 }
 
 const MockStateContext = createContext<MockStateContextType | undefined>(undefined);
@@ -504,7 +504,7 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                     // Fetch Vehicles
                     const dbVehicles = await vehicleDataProvider.getAll(supabaseUserId);
                     if (dbVehicles) {
-                        setVehicles(dbVehicles.map((v: any) => ({
+                        const vehiclesMapped = dbVehicles.map((v: any) => ({
                             id: v.id,
                             userId: v.user_id,
                             name: v.model || v.make + ' ' + v.model,
@@ -516,7 +516,17 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                             image: v.photo_url || 'https://placehold.co/150x150?text=Vehicle',
                             isPrimary: v.is_primary,
                             createdAt: v.created_at
-                        })) as any);
+                        }));
+
+                        // Ensure one is primary if none are
+                        if (vehiclesMapped.length > 0 && !vehiclesMapped.some(v => v.isPrimary)) {
+                            console.log('⚠️ No primary vehicle found, defaulting to first one');
+                            vehiclesMapped[0].isPrimary = true;
+                            // Async update DB
+                            vehicleDataProvider.setPrimary(vehiclesMapped[0].id, supabaseUserId).catch(console.error);
+                        }
+
+                        setVehicles(vehiclesMapped as any);
                         console.log('✅ Synced vehicles:', dbVehicles.length);
                     }
 
@@ -1431,11 +1441,25 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                 message: `Your vehicle details have been updated.`,
             });
         },
-        setPrimaryVehicle: (id: string) => {
+        setPrimaryVehicle: async (id: string) => {
+            // Optimistic update
             setVehicles(prev => prev.map(v => ({
                 ...v,
                 isPrimary: v.id === id
             })));
+
+            if (USE_SUPABASE) {
+                try {
+                    // Get the real Supabase Auth ID if possible, otherwise rely on context user
+                    const { data } = await supabase.auth.getUser();
+                    if (data.user) {
+                        await vehicleDataProvider.setPrimary(id, data.user.id);
+                        console.log(`✅ Vehicle ${id} set as primary in Supabase`);
+                    }
+                } catch (err) {
+                    console.error("❌ Failed to set primary vehicle in Supabase:", err);
+                }
+            }
         }
     };
 
