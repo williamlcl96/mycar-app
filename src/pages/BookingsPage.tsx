@@ -15,13 +15,16 @@ export function BookingsPage() {
     const [reviewBookingId, setReviewBookingId] = useState<string | null>(null)
     const [confirmingReleaseId, setConfirmingReleaseId] = useState<string | null>(null)
 
-    const activeBookings = bookings.filter(b => {
+    // Filter to only show bookings made BY this user (Customer view)
+    const myBookings = bookings.filter(b => b.customerId === user?.id)
+
+    const activeBookings = myBookings.filter(b => {
         const refund = refunds.find(r => r.bookingId === b.id)
         if (refund && ['Approved', 'Completed'].includes(refund.status)) return false
         return !['COMPLETED', 'CANCELLED'].includes(b.status)
     })
 
-    const historyBookings = bookings.filter(b => {
+    const historyBookings = myBookings.filter(b => {
         const refund = refunds.find(r => r.bookingId === b.id)
         if (refund && ['Approved', 'Completed'].includes(refund.status)) return true
         return ['COMPLETED', 'CANCELLED'].includes(b.status)
