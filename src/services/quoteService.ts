@@ -48,6 +48,18 @@ export const quoteService = {
         return data || []
     },
 
+    async getByBookingIds(bookingIds: string[]): Promise<Quote[]> {
+        if (bookingIds.length === 0) return []
+
+        const { data, error } = await supabase
+            .from('quotes')
+            .select('*')
+            .in('booking_id', bookingIds)
+
+        if (error) throw error
+        return data || []
+    },
+
     async create(quote: Omit<Quote, 'id' | 'created_at'> & { id?: string }): Promise<Quote> {
         const { data, error } = await supabase
             .from('quotes')

@@ -184,6 +184,13 @@ export const quoteDataProvider = {
         return null
     },
 
+    async getByBookingIds(bookingIds: string[]) {
+        if (USE_SUPABASE) {
+            return services.quoteService.getByBookingIds(bookingIds)
+        }
+        return null
+    },
+
     async create(quote: Parameters<typeof services.quoteService.create>[0]) {
         if (USE_SUPABASE) {
             return services.quoteService.create(quote)

@@ -113,7 +113,7 @@ export function OwnerJobDetails() {
                         </div>
                         <div>
                             <h3 className="font-bold text-slate-900 dark:text-white">{booking.vehicleName}</h3>
-                            <p className="text-sm text-slate-500">Customer: Ahmad Ali</p>
+                            <p className="text-sm text-slate-500">Customer: {booking.customerName}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50 dark:border-zinc-800">

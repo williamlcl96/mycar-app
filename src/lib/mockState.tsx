@@ -401,6 +401,27 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                             quoteId: b.quote_id
                         })) as any);
                         console.log('✅ Synced bookings:', allDbBookings.length);
+
+                        // Fetch Quotes for these bookings
+                        const bookingIds = allDbBookings.map(b => b.id);
+                        const dbQuotes = await quoteDataProvider.getByBookingIds(bookingIds);
+
+                        if (dbQuotes && dbQuotes.length > 0) {
+                            setQuotes(dbQuotes.map((q: any) => ({
+                                id: q.id,
+                                bookingId: q.booking_id,
+                                workshopId: q.workshop_id,
+                                items: q.items,
+                                labor: q.labor,
+                                tax: q.tax,
+                                total: q.total,
+                                status: q.status,
+                                diagnosis: q.diagnosis,
+                                note: q.note,
+                                createdAt: q.created_at
+                            })) as any);
+                            console.log('✅ Synced quotes:', dbQuotes.length);
+                        }
                     }
 
                     // Fetch Workshops

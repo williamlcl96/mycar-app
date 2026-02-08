@@ -89,7 +89,7 @@ export function OwnerMessages() {
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-0.5">
                                     <h3 className="font-bold text-slate-900 dark:text-white truncate">
-                                        {chat.userName || (chat.userId === 'u1' ? 'Ahmad Ali' : `Customer ${chat.userId.slice(-4).toUpperCase()}`)}
+                                        {chat.userName || `Customer ${chat.userId.slice(-4).toUpperCase()}`}
                                     </h3>
                                     <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
                                         {new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

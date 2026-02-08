@@ -35,25 +35,7 @@ export interface OwnerAccount extends UserAccount {
 const STORAGE_KEY = 'mycar_accounts';
 
 // Default accounts for testing
-const defaultAccounts: UserAccount[] = [
-    {
-        id: '11111111-1111-1111-1111-111111111111',
-        email: 'ahmad@example.com',
-        password: 'password123',
-        fullName: 'Ahmad Ali',
-        username: 'ahmad_ali',
-        role: 'customer',
-        createdAt: new Date().toISOString()
-    },
-    {
-        id: '22222222-2222-2222-2222-222222222222',
-        email: 'owner@workshop.com',
-        password: 'password123',
-        workshopName: 'Ah Seng Auto Services',
-        role: 'owner',
-        createdAt: new Date().toISOString()
-    }
-];
+const defaultAccounts: UserAccount[] = [];
 
 class AuthService {
     private accounts: UserAccount[] = [];
