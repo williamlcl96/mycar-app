@@ -945,6 +945,11 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                 const supabaseUserId = authData?.user?.id;
 
                 if (supabaseUserId) {
+                    console.log('[DEBUG] mockState: addBooking pushing to Supabase', {
+                        id: newBooking.id,
+                        status: newBooking.status,
+                        serviceType: newBooking.serviceType
+                    });
                     const created = await bookingDataProvider.create({
                         id: newBooking.id, // Pass Explicit Real UUID
                         customer_id: supabaseUserId, // Use real UUID
@@ -956,7 +961,7 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                         services: booking.services,
                         date: booking.date,
                         time: booking.time,
-                        status: booking.status,
+                        status: newBooking.status as any, // Explicitly use the status from newBooking
                         total_amount: booking.totalAmount || null,
                         quote_id: booking.quoteId || null
                     });
