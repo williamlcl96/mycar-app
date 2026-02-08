@@ -4,6 +4,7 @@ import { useMockState } from "../../lib/mockState"
 import { useChat } from "../../lib/chatState"
 import { useUser } from "../../contexts/UserContext"
 import type { Quote, Booking } from "../../lib/mockState"
+import { quoteService } from "../../services/quoteService"
 
 export function QuoteApproval() {
     const navigate = useNavigate()
@@ -15,15 +16,51 @@ export function QuoteApproval() {
     const [quote, setQuote] = useState<Quote | null>(null)
 
     useEffect(() => {
-        if (id) {
-            const foundBooking = bookings.find(b => b.id === id)
-            if (foundBooking) {
-                setBooking(foundBooking)
-                // Find quote for this booking
-                const foundQuote = quotes.find(q => q.bookingId === id)
-                if (foundQuote) setQuote(foundQuote)
+        const loadData = async () => {
+            if (id) {
+                const foundBooking = bookings.find(b => b.id === id)
+                if (foundBooking) {
+                    setBooking(foundBooking)
+
+                    // 1. Try finding in context
+                    const foundQuote = quotes.find(q => q.bookingId === id)
+                    if (foundQuote) {
+                        setQuote(foundQuote)
+                    } else {
+                        // 2. Fallback: Fetch directly
+                        try {
+                            const fetchedQuote = await quoteService.getByBooking(id)
+                            if (fetchedQuote) {
+                                // Map snake_case to camelCase if needed, or ensure Quote type matches DB
+                                // The Quote type in mockState seems to match DB snake_case for some fields? 
+                                // No, mockState quotes are camelCase. Service returns snake_case (usually).
+                                // quoteService.getByBooking returns "Quote" interface.
+                                // Let's check Quote interface in quoteService vs mockState.
+
+                                // Actually, allow me to perform a check on types first.
+                                // For now, I will assume keys need mapping if they differ.
+                                setQuote({
+                                    id: fetchedQuote.id,
+                                    bookingId: fetchedQuote.booking_id,
+                                    workshopId: fetchedQuote.workshop_id,
+                                    items: fetchedQuote.items,
+                                    labor: fetchedQuote.labor,
+                                    tax: fetchedQuote.tax,
+                                    total: fetchedQuote.total,
+                                    status: fetchedQuote.status,
+                                    diagnosis: fetchedQuote.diagnosis,
+                                    note: fetchedQuote.note,
+                                    createdAt: fetchedQuote.created_at
+                                } as any)
+                            }
+                        } catch (err) {
+                            console.error("Failed to fetch quote:", err)
+                        }
+                    }
+                }
             }
         }
+        loadData()
     }, [id, bookings, quotes])
 
     const handleRejectAndDiscuss = async () => {
