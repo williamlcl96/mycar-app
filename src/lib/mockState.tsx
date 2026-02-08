@@ -522,21 +522,36 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
 
                     // Fetch Bookings
                     console.log('🔄 Syncing bookings for user:', supabaseUserId);
-                    const dbBookings = await bookingDataProvider.getByCustomer(supabaseUserId);
-                    if (dbBookings) {
-                        console.log('📦 Fetched bookings from Supabase:', dbBookings.map((b: any) => ({
-                            id: b.id,
-                            status: b.status,
-                            quote_id: b.quote_id
-                        })));
+                    let allDbBookings: any[] = [];
 
-                        setBookings(dbBookings.map((b: any) => ({
+                    // 1. Fetch as Customer
+                    const customerBookings = await bookingDataProvider.getByCustomer(supabaseUserId);
+                    if (customerBookings) {
+                        allDbBookings = [...customerBookings];
+                    }
+
+                    // 2. Fetch as Workshop Owner
+                    if (user?.workshopId) {
+                        console.log('🔄 Syncing workshop bookings for:', user.workshopId);
+                        const workshopBookings = await bookingDataProvider.getByWorkshop(user.workshopId);
+                        if (workshopBookings) {
+                            // Dedupe (in case user booked their own workshop)
+                            const existingIds = new Set(allDbBookings.map(b => b.id));
+                            const uniqueWorkshopBookings = workshopBookings.filter((b: any) => !existingIds.has(b.id));
+                            allDbBookings = [...allDbBookings, ...uniqueWorkshopBookings];
+                            console.log(`📦 Fetched ${uniqueWorkshopBookings.length} workshop bookings`);
+                        }
+                    }
+
+                    if (allDbBookings.length > 0) {
+                        console.log('📦 Total bookings to state:', allDbBookings.length);
+                        setBookings(allDbBookings.map((b: any) => ({
                             id: b.id,
                             customerId: b.customer_id,
                             workshopId: b.workshop_id,
                             workshopName: b.workshop?.name || 'Unknown Workshop',
                             workshopImage: b.workshop?.image,
-                            customerName: user?.name || 'Customer',
+                            customerName: b.customer?.name || (b.customer_id === user?.id ? user?.name : 'Customer'),
                             vehicleName: b.vehicle_name,
                             vehiclePlate: b.vehicle_plate,
                             serviceType: b.service_type,
@@ -548,7 +563,7 @@ export function MockStateProvider({ children }: { children: ReactNode }) {
                             createdAt: b.created_at,
                             quoteId: b.quote_id
                         })) as any);
-                        console.log('✅ Synced bookings:', dbBookings.length);
+                        console.log('✅ Synced bookings:', allDbBookings.length);
                     }
 
                     // Fetch Workshops
