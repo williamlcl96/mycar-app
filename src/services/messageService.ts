@@ -31,7 +31,8 @@ export const messageService = {
             .select(`
                 *,
                 workshop:workshops(id, name, image),
-                customer:profiles!customer_id(id, name)
+                customer:profiles!customer_id(id, name),
+                messages(*)
             `)
             .order('last_message_at', { ascending: false, nullsFirst: false })
 
@@ -52,7 +53,8 @@ export const messageService = {
             .from('conversations')
             .select(`
                 *,
-                customer:profiles!customer_id(id, name)
+                customer:profiles!customer_id(id, name),
+                messages(*)
             `)
             .eq('workshop_id', workshopId)
             .order('last_message_at', { ascending: false, nullsFirst: false })
@@ -63,12 +65,19 @@ export const messageService = {
 
     async getOrCreateConversation(customerId: string, workshopId: string, bookingId?: string): Promise<Conversation> {
         // Try to find existing conversation
-        const { data: existing, error: findError } = await supabase
+        let query = supabase
             .from('conversations')
             .select('*')
             .eq('customer_id', customerId)
             .eq('workshop_id', workshopId)
-            .maybeSingle()
+
+        if (bookingId) {
+            query = query.eq('booking_id', bookingId)
+        } else {
+            query = query.is('booking_id', null)
+        }
+
+        const { data: existing, error: findError } = await query.maybeSingle()
 
         if (findError) {
             console.warn("Conversation lookup error:", findError.message)
