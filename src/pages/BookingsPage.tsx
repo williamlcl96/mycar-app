@@ -223,8 +223,14 @@ export function BookingsPage() {
                                     <button
                                         onClick={async () => {
                                             if (!user) return navigate('/login')
+                                            console.log('[DEBUG] BookingsPage: Contact clicked', {
+                                                bookingId: booking.id,
+                                                workshopId: booking.workshopId,
+                                                customerId: booking.customerId
+                                            });
                                             switchRole('customer')
-                                            const cid = await getOrCreateBookingChat(user.id, booking.workshopId, booking.id, user.name || user.email, booking.workshopName, user.avatar)
+                                            const cid = await getOrCreateBookingChat(booking.customerId, booking.workshopId, booking.id, user?.name || user?.email, booking.workshopName, user?.avatar)
+                                            console.log('[DEBUG] BookingsPage: Received cid', cid);
                                             navigate(`/messages/${cid}`)
                                         }}
                                         className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-zinc-700 px-4 py-3 text-slate-700 dark:text-slate-300 font-bold text-sm"
