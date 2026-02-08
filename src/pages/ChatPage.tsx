@@ -35,12 +35,20 @@ export function ChatPage() {
         return () => clearTimeout(timer)
     }, [])
 
-    const conversation = useMemo(() => getConversation(conversationId || ""), [conversationId, getConversation])
+    const conversation = useMemo(() => {
+        const conv = getConversation(conversationId || "");
+        console.log('[DEBUG] ChatPage: Conversation lookup', { conversationId, found: !!conv, bookingId: conv?.bookingId });
+        return conv;
+    }, [conversationId, getConversation])
     const chatMessages = conversation?.messages || []
     const [inputText, setInputText] = useState("")
 
     const workshop = useMemo(() => workshops.find(w => w.id === conversation?.workshopId), [workshops, conversation])
-    const booking = useMemo(() => bookings.find(b => b.id === conversation?.bookingId), [bookings, conversation])
+    const booking = useMemo(() => {
+        const b = bookings.find(b => b.id === conversation?.bookingId);
+        console.log('[DEBUG] ChatPage: Booking lookup', { bookingId: conversation?.bookingId, found: !!b, status: b?.status });
+        return b;
+    }, [bookings, conversation])
 
     // Determine names from context
     const customerName = conversation?.userName || (booking?.customerName) || 'Customer'

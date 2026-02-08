@@ -77,15 +77,20 @@ export const messageService = {
             query = query.is('booking_id', null)
         }
 
+        console.log('[DEBUG] messageService: getOrCreateConversation query params', { customerId, workshopId, bookingId });
         const { data: existing, error: findError } = await query.maybeSingle()
 
         if (findError) {
-            console.warn("Conversation lookup error:", findError.message)
+            console.warn("[DEBUG] messageService: Conversation lookup error:", findError.message)
         }
 
-        if (existing) return existing
+        if (existing) {
+            console.log('[DEBUG] messageService: Found existing conversation', existing);
+            return existing
+        }
 
         // Create new conversation
+        console.log('[DEBUG] messageService: Creating NEW conversation...');
         const { data, error } = await supabase
             .from('conversations')
             .insert({
@@ -96,22 +101,32 @@ export const messageService = {
             .select()
             .single()
 
-        if (error) throw error
+        if (error) {
+            console.error("[DEBUG] messageService: Create failed", error);
+            throw error
+        }
+        console.log('[DEBUG] messageService: Create successful', data);
         return data
     },
 
     async getMessages(conversationId: string): Promise<Message[]> {
+        console.log('[DEBUG] messageService: getMessages called', { conversationId });
         const { data, error } = await supabase
             .from('messages')
             .select('*')
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: true })
 
-        if (error) throw error
+        if (error) {
+            console.error('[DEBUG] messageService: getMessages error', error);
+            throw error
+        }
+        console.log('[DEBUG] messageService: getMessages result', data);
         return data || []
     },
 
     async sendMessage(conversationId: string, senderId: string, senderRole: 'customer' | 'owner', content: string): Promise<Message> {
+        console.log('[DEBUG] messageService: sendMessage called', { conversationId, senderId, senderRole, content });
         // Insert message
         const { data: message, error: msgError } = await supabase
             .from('messages')
@@ -124,10 +139,14 @@ export const messageService = {
             .select()
             .single()
 
-        if (msgError) throw msgError
+        if (msgError) {
+            console.error('[DEBUG] messageService: sendMessage insert error', msgError);
+            throw msgError
+        }
+        console.log('[DEBUG] messageService: Message inserted', message);
 
         // Update conversation with last message
-        await supabase
+        const { error: updateError } = await supabase
             .from('conversations')
             .update({
                 last_message: content,
@@ -135,10 +154,17 @@ export const messageService = {
             })
             .eq('id', conversationId)
 
+        if (updateError) {
+            console.error('[DEBUG] messageService: sendMessage conversation update error', updateError);
+            // Don't throw, message was already sent. Log for debugging.
+        }
+        console.log('[DEBUG] messageService: Conversation updated with last message');
+
         return message
     },
 
     subscribeToMessages(conversationId: string, callback: (message: Message) => void) {
+        console.log('[DEBUG] messageService: subscribeToMessages called', { conversationId });
         return supabase
             .channel(`messages:${conversationId}`)
             .on(
@@ -149,7 +175,10 @@ export const messageService = {
                     table: 'messages',
                     filter: `conversation_id=eq.${conversationId}`
                 },
-                (payload) => callback(payload.new as Message)
+                (payload) => {
+                    console.log('[DEBUG] messageService: New message received via subscription', payload.new);
+                    callback(payload.new as Message)
+                }
             )
             .subscribe()
     },
