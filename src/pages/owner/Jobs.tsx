@@ -16,7 +16,7 @@ export function OwnerJobsPage() {
     const initialTab = (searchParams.get('tab') as any) || 'REQUESTS'
     const { bookings, workshops, quotes, refunds, updateBookingStatus } = useMockState()
     const { getOrCreateBookingChat } = useChat()
-    const { user } = useUser()
+    const { user, switchRole } = useUser()
     const [uiTab, setUiTab] = useState<'REQUESTS' | 'ACTIVE' | 'HISTORY'>(
         ['REQUESTS', 'ACTIVE', 'HISTORY'].includes(initialTab) ? initialTab : 'REQUESTS'
     )
@@ -157,7 +157,15 @@ export function OwnerJobsPage() {
                                             onClick={async (e) => {
                                                 e.stopPropagation()
                                                 if (!user) return
+                                                console.log('[DEBUG] OwnerJobsPage: Contact clicked', {
+                                                    bookingId: booking.id,
+                                                    workshopId: shopId,
+                                                    customerId: booking.customerId
+                                                });
+                                                const result = switchRole('owner')
+                                                console.log('[DEBUG] OwnerJobsPage: switchRole result', result);
                                                 const cid = await getOrCreateBookingChat(booking.customerId, shopId, booking.id, booking.customerName, workshops.find(w => w.id === shopId)?.name)
+                                                console.log('[DEBUG] OwnerJobsPage: Received cid', cid);
                                                 navigate(`/messages/${cid}`)
                                             }}
                                             className="size-9 bg-slate-50 dark:bg-zinc-800 text-slate-400 flex items-center justify-center rounded-lg hover:text-primary transition-colors border border-slate-100 dark:border-zinc-800"

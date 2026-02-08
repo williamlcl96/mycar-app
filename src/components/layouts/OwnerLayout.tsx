@@ -12,12 +12,22 @@ export function OwnerLayout() {
 
     const mainRef = React.useRef<HTMLDivElement>(null);
 
+    const { role } = useUser();
+
     // Auto-scroll to top on route change
     React.useEffect(() => {
         if (mainRef.current) {
             mainRef.current.scrollTop = 0;
         }
     }, [location.pathname]);
+
+    // Enforce owner role when using owner layout
+    React.useEffect(() => {
+        if (role !== 'owner') {
+            console.log('[DEBUG] OwnerLayout: Enforcing owner role');
+            switchRole('owner');
+        }
+    }, [role, switchRole]);
 
     return (
         <div className="relative flex flex-col h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl">

@@ -31,6 +31,19 @@ export function ChatPage() {
     }, [conversationId, refreshConversations])
 
     useEffect(() => {
+        console.log('[DEBUG] ChatPage: Component Mount', {
+            userId: user?.id,
+            workshopId: user?.workshopId,
+            activeRole,
+            conversationId
+        });
+        const timer = setTimeout(() => {
+            window.scrollTo(0, 0)
+        }, 100)
+        return () => clearTimeout(timer)
+    }, [user?.id, user?.workshopId, activeRole, conversationId])
+
+    useEffect(() => {
         const timer = setTimeout(() => setIsLoaded(true), 300)
         return () => clearTimeout(timer)
     }, [])
