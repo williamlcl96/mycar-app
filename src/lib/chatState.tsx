@@ -252,6 +252,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const deleteConversation = useCallback(async (conversationId: string) => {
+        console.log('[DEBUG] chatState: deleteConversation called', { conversationId });
         // Delete from Supabase if enabled
         if (USE_SUPABASE) {
             // Strip prefix if present (e.g. c-timestamp or b-uuid)
@@ -265,7 +266,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 }
             }
         }
+
+        // Always remove from local state immediately
         setConversations(prev => prev.filter(c => c.id !== conversationId))
+
+        // Also clear from localStorage
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved)
+                const filtered = parsed.filter((c: any) => c.id !== conversationId)
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
+            } catch (e) {
+                console.error("Failed to update localStorage after deletion", e)
+            }
+        }
     }, [])
 
     const getConversation = useCallback((id: string) => conversations.find(c => c.id === id), [conversations])

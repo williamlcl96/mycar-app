@@ -23,6 +23,7 @@ export function OwnerJobsPage() {
 
     const shopId = useMemo(() => {
         if (!user) return 'w1'
+        if (user.workshopId) return user.workshopId;
         const shopData = shopService.getShopData(user.email)
         return workshops.find(w => w.name === shopData?.workshopName)?.id || 'w1'
     }, [user, workshops])

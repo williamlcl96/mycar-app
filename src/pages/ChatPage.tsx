@@ -81,23 +81,27 @@ export function ChatPage() {
         if (name) return { name, plate: plate && plate !== 'undefined' ? plate : null };
 
         // Fallback to primary vehicle of user for consultations
-        const userVehicles = vehicles.filter(v => v.userId === conversation?.userId);
+        const userVehicles = vehicles.filter(v => v.id === conversation?.userId);
         const primary = userVehicles.find(v => v.isPrimary) || userVehicles[0];
         return primary ? { name: primary.name, plate: primary.plate && primary.plate !== 'undefined' ? primary.plate : null } : null;
     }, [booking, vehicles, conversation])
 
-    const handleSend = () => {
-        if (!inputText.trim() || !conversationId || !user) return
-        const role = activeRole === 'owner' ? 'workshop' : 'user'
-        sendMessage(conversationId, inputText, role, user.id)
+    const handleSend = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault()
+        if (!inputText.trim() || !user || !conversationId) return
+
+        const text = inputText.trim()
         setInputText("")
+        console.log('[DEBUG] ChatPage: Sending message', { conversationId, text, activeRole });
+        await sendMessage(conversationId, text, activeRole === 'owner' ? 'workshop' : 'user', user.id)
     }
 
-    const handleDeleteChat = () => {
+    const handleDeleteChat = async () => {
         if (!conversationId) return
-        if (window.confirm("Are you sure you want to delete this entire chat history?")) {
-            deleteConversation(conversationId)
-            navigate(-1)
+        if (window.confirm("Are you sure you want to delete this conversation?")) {
+            console.log('[DEBUG] ChatPage: Deleting conversation', conversationId);
+            await deleteConversation(conversationId)
+            navigate(activeRole === 'owner' ? '/owner/messages' : '/messages')
         }
     }
 
@@ -279,24 +283,23 @@ export function ChatPage() {
                     </div>
                 )}
 
-                <div className="p-4 pt-1 flex items-center gap-3">
-                    <button className="text-primary hover:bg-primary/10 p-1 rounded-full transition-colors">
+                <form onSubmit={handleSend} className="p-4 pt-1 flex items-center gap-3">
+                    <button type="button" className="text-primary hover:bg-primary/10 p-1 rounded-full transition-colors">
                         <span className="material-symbols-outlined text-2xl">add_circle</span>
                     </button>
                     <div className="relative flex-1">
                         <input
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             className="w-full bg-slate-50 dark:bg-zinc-800/80 border-slate-100 dark:border-zinc-700 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-white transition-all outline-none"
                             placeholder="Type a message..."
                             type="text"
                         />
                     </div>
-                    <button onClick={handleSend} className="bg-primary text-white h-10 w-10 flex items-center justify-center rounded-full shadow-md active:scale-90 transition-transform">
+                    <button type="submit" className="bg-primary text-white h-10 w-10 flex items-center justify-center rounded-full shadow-md active:scale-90 transition-transform">
                         <span className="material-symbols-outlined">send</span>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     )
